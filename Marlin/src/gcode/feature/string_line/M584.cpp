@@ -1,0 +1,87 @@
+#include "../../../inc/MarlinConfig.h"
+#include "../../gcode.h"
+#include "../../../module/planner.h"
+#include "../../../module/string_periphery.h"
+
+
+//STRING CONTROL
+void GcodeSuite::M584() {
+  #ifdef PRIMARY_PLATE
+  //string sup--------------------------------------
+  if (parser.seen('I'))
+  {
+    if(parser.seen('O'))  string_manager.force_off[parser.intval('I')] = parser.floatval('O'); 
+    if (parser.seen('P'))  string_manager.force_k[parser.intval('I')] = parser.floatval('P');
+    if (parser.seen('K'))  string_manager.koef_v_tens[parser.intval('I')] = parser.floatval('K');
+    if (parser.seen('Z'))  string_manager.orig_speed_tens[parser.intval('I')]  = parser.floatval('Z');//Z
+    
+    if (parser.seen('J') && parser.seen('L') ) 
+    {
+      float val = parser.floatval('J');
+      for(int i=0; i<TENSOMETR_NUM; i++) string_manager.force_dest[i]  = val;
+      //Serial.println(val);
+    }
+    else if (parser.seen('J')) 
+    {
+         string_manager.force_dest[parser.intval('I')]  = parser.floatval('J');//J
+    }
+    if (parser.seen('W'))  string_manager.dir[string_manager.motors_tens[parser.intval('I')]]  = parser.intval('W');//W
+    if (parser.seen('H'))  string_manager.koef_gauss[parser.intval('I')]  = parser.floatval('H');//Z
+  }
+  else
+  {
+    if(parser.seen('K'))
+    {
+      if (parser.seen('A'))  string_manager.taring_process[0]  = parser.intval('A');
+      if (parser.seen('B'))  string_manager.taring_process[1]  = parser.intval('B');
+      if (parser.seen('C'))  string_manager.taring_process[2]  = parser.intval('C');
+      if (parser.seen('D') )  string_manager.taring_process[3]  = parser.intval('D');
+      if (parser.seen('F') )  string_manager.taring_process[4]  = parser.intval('F');
+      string_manager.tare_tens();
+    }
+    
+    else
+    {
+      for(int i=0; i<5;i++)
+      {
+        string_manager.string_move_second[i]  = 0;
+        string_manager.string_state_second[i]  = 0;
+      }
+
+      if (parser.seen('A'))  {string_manager.string_state_second[0]  = parser.intval('A'); }
+      if (parser.seen('B'))  {string_manager.string_state_second[1]  = parser.intval('B'); }
+      if (parser.seen('C'))  {string_manager.string_state_second[2]  = parser.intval('C'); }
+      if (parser.seen('D'))  {string_manager.string_state_second[3]  = parser.intval('D'); }
+      if (parser.seen('F'))  {string_manager.string_state_second[4]  = parser.intval('F'); }
+      //string main--------------------------------------
+      
+      if (parser.seen('U')) 
+      {
+        string_manager.string_move  = parser.intval('U');   
+
+        int moving = 1;
+
+        if(string_manager.string_move==0) moving = 0;
+        if (parser.seen('A'))  {string_manager.string_move_second[0]  = moving * parser.intval('A'); string_manager.set_pfled(PFLED_STRING0,string_manager.string_move_second[0]);}
+        if (parser.seen('B'))  {string_manager.string_move_second[1]  = moving * parser.intval('B'); string_manager.set_pfled(PFLED_STRING1,string_manager.string_move_second[1]);}
+        if (parser.seen('C'))  {string_manager.string_move_second[2]  = moving * parser.intval('C'); string_manager.set_pfled(PFLED_STRING2,string_manager.string_move_second[2]);}
+        if (parser.seen('D'))  {string_manager.string_move_second[3]  = moving * parser.intval('D'); string_manager.set_pfled(PFLED_STRING3,string_manager.string_move_second[3]);}
+        if (parser.seen('F'))  {string_manager.string_move_second[4]  = moving * parser.intval('F'); string_manager.set_pfled(PFLED_STRING4,string_manager.string_move_second[4]);}          
+      }
+      
+      //if (parser.seen('U') && parser.seen('V'))  string_manager.speed_koef  = parser.floatval('V');
+      //if (parser.seen('U') && parser.seen('Z'))  string_manager.orig_speed_tens_com  = parser.floatval('W'); 
+      //if (parser.seen('U') && parser.seen('W'))  string_manager.dir[string_manager.motor_com_axis]  = parser.intval('W');
+
+      if (parser.seen('W') && parser.seen('E'))  string_manager.set_vel_strings(parser.floatval('E'));
+      if (parser.seen('O'))  string_manager.move_pos_string(parser.intval('O'));
+      if (parser.seen('W') && parser.seen('H'))  string_manager.set_dest_lenght_string(parser.floatval('H'));
+      if (parser.seen('W') && parser.seen('J'))  string_manager.set_current_lenght_string(parser.floatval('J'));
+    }
+  }
+  
+  #endif
+  //-------------------------------------
+
+
+}
