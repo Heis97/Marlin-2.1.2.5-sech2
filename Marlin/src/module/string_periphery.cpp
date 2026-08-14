@@ -5,7 +5,7 @@
 //#define ETHERNET_TCP
 
 #define I2C_REC_LEN 25
-#define UDP_PACKET_LEN 30
+#define UDP_PACKET_LEN 60//30
 #define SPI_PACKET_LEN 56
 
 #define ETHERNET_PERIOD_MCS 1000  //8
@@ -959,7 +959,7 @@ int led_counter = 0;
 void StringPeriphery::idle()
 {
     
-    manage_motion();
+    //manage_motion();
     
     //Serial.println(motors._divider[0]);
 
@@ -1480,11 +1480,11 @@ String StringPeriphery::state_cur()
     {
         state = "st1 "+
         String(cur_line_num)+ delim+//0
-        String(cur_send)+ delim+//1
-        String(reley_press)+delim+//2
-        String(pressure)+delim+//3
-        String(motors.control_counter)+delim+//4
-        String(force_dest[0])+delim+//5 
+        String(motors.debug_count)+ delim+//1
+        String(motors._steps[0])+delim+//2
+        String(motors.ring_buf_en)+delim+//3
+        String(motors.ring_buf_counter)+delim+//4
+        String(motors.ring_buf_all_counter_write)+delim+//5 
         String(time_measure_mc)+delim;//6
     }
     

@@ -1,6 +1,7 @@
 ﻿
 
 #define AXIS_NUM 8
+#define RING_BUF_NUM 50
 #include <Arduino.h>
 #include "../inc/MarlinConfig.h"
 #include "../module/settings.h"
@@ -26,6 +27,7 @@ class StepDirDriverPos {
       StepDirDriverPos(int* pinStep, int* pinDir, int* pinEn, int* pinStop); // конструктор
       void  control();  // управление, метод должен вызываться регулярно с максимальной частотой коммутации фаз.
       void  control(byte num); 
+      void  ring_buf_control(); 
       void  home_axis(byte num);
       void  home_handler(byte num);
       void  home_handler();
@@ -73,9 +75,29 @@ class StepDirDriverPos {
       
       #endif
 
+    volatile long ring_buf_x[RING_BUF_NUM]{ }; 
+    volatile long ring_buf_y[RING_BUF_NUM]{ }; 
+    volatile long ring_buf_z[RING_BUF_NUM]{ }; 
+    volatile long ring_buf_e[RING_BUF_NUM]{ }; 
+    volatile long ring_buf_time[RING_BUF_NUM]{ }; 
+    volatile long ring_buf_dividerCount[RING_BUF_NUM]{ }; 
+    volatile int ring_buf_dividerCount_sub[RING_BUF_NUM]{ }; 
 
+    volatile long ring_buf_command_counter = 0;
+    volatile long ring_buf_counter = 0;
+    volatile long ring_buf_lookup = 20;
+    volatile long ring_buf_cur_count = 0;
+
+
+    volatile long debug_count = 0;
+
+    volatile unsigned long ring_buf_all_counter = 0;
+    volatile unsigned long ring_buf_all_counter_write = 0;
+    volatile unsigned long ring_buf_all_counter_write_max = 0;
+
+    volatile bool ring_buf_en = false;
         
-    private:
+
       volatile long int _steps[AXIS_NUM]{};// оставшееся число шагов 
       volatile long int _pos[AXIS_NUM]{}; 
         
@@ -95,7 +117,7 @@ class StepDirDriverPos {
       volatile float  _vel_prev[AXIS_NUM]{}; 
       
       volatile float  _acs[AXIS_NUM]{};  
-
+    private:
       int _pinStep[AXIS_NUM]{};
       int  _pinDir[AXIS_NUM]{};
       int  _pinEn [AXIS_NUM]{};

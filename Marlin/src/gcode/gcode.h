@@ -1102,7 +1102,8 @@ private:
   static void M584();
   static void M585();
   static void M586();
-   static void M587();
+  static void M587();
+  static void M588();
   #if HAS_ZV_SHAPING
     static void M593();
     static void M593_report(const bool forReplay=true);

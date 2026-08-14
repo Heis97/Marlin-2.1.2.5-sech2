@@ -115,7 +115,11 @@ vibro_ampl[E0_AXIS] = 30;
 // метод должен вызываться регулярно с максимальной частотой коммутации фаз
 void  StepDirDriverPos::control(byte num) {
    //Serial.println(num);
+
+  
+
    if(do_step[num]) { 
+    debug_count  = _dividerCount[num];
     WRITE(_pinStep[num], LOW);
      do_step[num] = false; 
      //Serial.println("do_step false");
@@ -128,7 +132,7 @@ void  StepDirDriverPos::control(byte num) {
     else 
     { 
       _dividerCount[num]= 0;
-      if(_dividerCount_sub[num] > _divider_sub[num])
+      /*if(_dividerCount_sub[num] > _divider_sub[num])
       {
         _dividerCount[num]= 1;
       };
@@ -136,7 +140,7 @@ void  StepDirDriverPos::control(byte num) {
       if(_dividerCount_sub[num]==100)
       {
         _dividerCount_sub[num] = 0;
-      }
+      }*/
     };
   
  
@@ -154,7 +158,7 @@ void  StepDirDriverPos::control(byte num) {
 
 
     //#ifndef PRIMARY_PLATE
-    if(_vibro[num]==1)
+    /*if(_vibro[num]==1)
     {
        _steps[num]  =200;
       if(vibro_counter[num] < vibro_ampl[num])
@@ -175,19 +179,67 @@ void  StepDirDriverPos::control(byte num) {
           cur_dir[num] = 0;
         }
       }
-    }
+    }*/
 
     //#endif
 
   }           
 }
 
+void  StepDirDriverPos::ring_buf_control() 
+{
+  
+  int ring_buf_cur = ring_buf_counter%RING_BUF_NUM;//current command all and in ring
+  
+  if(ring_buf_cur_count>=ring_buf_time[ring_buf_cur])
+  {
+    ring_buf_cur_count = 0;
+    //when next command
+    
+   
+    /*gotopos(ring_buf_x[ring_buf_cur], X_AXIS );
+    gotopos(ring_buf_y[ring_buf_cur], Y_AXIS );
+    gotopos(ring_buf_z[ring_buf_cur], Z_AXIS );
+    gotopos(ring_buf_e[ring_buf_cur], E_AXIS );*/
+
+    step(ring_buf_x[ring_buf_cur], X_AXIS );
+    //step(ring_buf_y[ring_buf_cur], Y_AXIS );
+    //step(ring_buf_z[ring_buf_cur], Z_AXIS );
+    //step(ring_buf_e[ring_buf_cur], E_AXIS );
+
+
+    float cur_time = (float)ring_buf_time[ring_buf_cur];
+    if(cur_time<=0) cur_time = 1;
+    if(ring_buf_x[ring_buf_cur]!=0) setDiv(cur_time/(float)ring_buf_x[ring_buf_cur], X_AXIS);
+    //if(ring_buf_y[ring_buf_cur]!=0) setDiv(cur_time/(float)ring_buf_y[ring_buf_cur], Y_AXIS);
+    //if(ring_buf_z[ring_buf_cur]!=0) setDiv(cur_time/(float)ring_buf_z[ring_buf_cur], Z_AXIS);
+    //if(ring_buf_e[ring_buf_cur]!=0) setDiv(cur_time/(float)ring_buf_e[ring_buf_cur], E_AXIS);
+
+  // _dividerCount[X_AXIS]= 0;
+  //  _dividerCount_sub[X_AXIS]= 0;
+
+     /*_dividerCount[Y_AXIS]= 0;
+    _dividerCount_sub[Y_AXIS]= 0;
+
+    _dividerCount[Z_AXIS]= 0;
+    _dividerCount_sub[Z_AXIS]= 0;
+
+    _dividerCount[E_AXIS]= 0;
+    _dividerCount_sub[E_AXIS]= 0;*/
+    //-------------------
+    ring_buf_counter++;
+
+  }
+  ring_buf_cur_count++;
+  
+}
+
 long control_counter = 0;
 void  StepDirDriverPos::control() {
   //for (byte i=AXIS_NUM-1; i>0;i--){ control(i); }
-
-control_counter++;
-control(7);
+  if(ring_buf_en) ring_buf_control();
+  control_counter++;
+  control(7);
   control(6);
   control(5);
   control(4);
@@ -195,6 +247,8 @@ control(7);
   control(2);
   control(1);
   control(0);
+
+  
 }
 //------------------------------- запуск вращения
 // инициирует поворот двигателя на заданное число шагов
@@ -510,6 +564,8 @@ void  StepDirDriverPos::vel_handler()
 _time_ch_vel = micros();
  // for (byte i=0; i<AXIS_NUM;i++){  vel_handler(i); }  
 
+
+//ring_buf
     vel_handler(0);
     vel_handler(1);
     vel_handler(2);
@@ -517,6 +573,8 @@ _time_ch_vel = micros();
     vel_handler(4);
     vel_handler(5);
     vel_handler(6);
+
+
    // vel_handler(7);
 
   #ifdef DEBUG_STEP_DIR
@@ -541,7 +599,10 @@ int counter_idle = 0;
 void StepDirDriverPos::idle()
 {
  // #ifndef PRIMARY_PLATE
-  counter_idle++;
+
+ if(!ring_buf_en)
+ {
+counter_idle++;
   if(counter_idle>100)
   {
     vel_handler();
@@ -549,4 +610,7 @@ void StepDirDriverPos::idle()
   }
  //#endif
   home_handler();
+
+ }
+  
 }
