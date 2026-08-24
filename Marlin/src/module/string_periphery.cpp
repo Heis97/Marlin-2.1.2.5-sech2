@@ -1482,9 +1482,9 @@ String StringPeriphery::state_cur()
         String(cur_line_num)+ delim+//0
         String(motors.debug_count)+ delim+//1
         String(motors._steps[0])+delim+//2
-        String(motors.ring_buf_en)+delim+//3
-        String(motors.ring_buf_counter)+delim+//4
-        String(motors.ring_buf_all_counter_write)+delim+//5 
+        String(motors.ring_buf_counter)+delim+//3
+        String(motors.ring_buf_cur_count)+delim+//4
+        String(motors.ring_buf_time[motors.ring_buf_counter%RING_BUF_NUM])+delim+//5 
         String(time_measure_mc)+delim;//6
     }
     

@@ -7,7 +7,7 @@
 void GcodeSuite::M588() {
     if (parser.seen('X') && parser.seen('Y') && parser.seen('Z') && parser.seen('E') && parser.seen('W')) 
     {
-        motors.ring_buf_all_counter_write_max = motors.ring_buf_lookup +motors.ring_buf_all_counter_write;
+        motors.ring_buf_all_counter_write_max = motors.ring_buf_lookup + motors.ring_buf_all_counter_write;
         
         if(motors.ring_buf_all_counter_write>= motors.ring_buf_all_counter_write_max) return;
         int cur_ind_ring = motors.ring_buf_all_counter_write%RING_BUF_NUM;
@@ -22,6 +22,7 @@ void GcodeSuite::M588() {
 
     if (parser.seen('A'))  motors.ring_buf_en = parser.intval('A');
      if (parser.seen('B'))  motors.ring_buf_lookup = parser.intval('B');
-    
+     if (parser.seen('C'))  motors.ring_buf_end= parser.intval('C');
+     if (parser.seen('D')) motors.ring_buf_counter = parser.intval('D');
 
 }

@@ -1,7 +1,7 @@
 ﻿
 
 #define AXIS_NUM 8
-#define RING_BUF_NUM 50
+#define RING_BUF_NUM 80
 #include <Arduino.h>
 #include "../inc/MarlinConfig.h"
 #include "../module/settings.h"
@@ -86,7 +86,8 @@ class StepDirDriverPos {
     volatile long ring_buf_command_counter = 0;
     volatile long ring_buf_counter = 0;
     volatile long ring_buf_lookup = 20;
-    volatile long ring_buf_cur_count = 0;
+    volatile long ring_buf_end = 0;
+    volatile int ring_buf_cur_count = 0;
 
 
     volatile long debug_count = 0;
@@ -98,7 +99,7 @@ class StepDirDriverPos {
     volatile bool ring_buf_en = false;
         
 
-      volatile long int _steps[AXIS_NUM]{};// оставшееся число шагов 
+      volatile long _steps[AXIS_NUM]{};// оставшееся число шагов 
       volatile long int _pos[AXIS_NUM]{}; 
         
      // boolean _fixStop[AXIS_NUM];  // признак фиксации положения при остановке
