@@ -12,6 +12,8 @@ int dir_pins [AXIS_NUM] {X_DIR_PIN,   Y_DIR_PIN,   Z_DIR_PIN,   I_DIR_PIN,   J_D
 int en_pins  [AXIS_NUM] {X_ENABLE_PIN,Y_ENABLE_PIN,Z_ENABLE_PIN,I_ENABLE_PIN,J_ENABLE_PIN,K_ENABLE_PIN,U_ENABLE_PIN,E0_ENABLE_PIN};
 int stop_pins[AXIS_NUM] {X_DIAG_PIN,  Y_DIAG_PIN,  Z_DIAG_PIN,  I_DIAG_PIN,  J_DIAG_PIN,  K_DIAG_PIN,  U_DIAG_PIN,  E0_DIAG_PIN  };
 
+int pin_stop_delta_calibr = I_DIAG_PIN;
+
 #ifdef MAKET
 #ifdef PRIMARY_PLATE
 #define K_SET 0.63
@@ -33,11 +35,17 @@ float steps_pr_mm_k[AXIS_NUM] { 1, 1, 1, 1, 1, 1, 1, 1};
 //
 
 //dev 10    {-1,  -1,  1,  1,  1,  1,  1,  1  };
-int motor_dir[AXIS_NUM] {-1,  -1,  -1,  -1,  -1,  -1,  -1,  1 };
+
+
+bool end_inv[AXIS_NUM]{false,  false, false, false, false,  false, false, false }; 
+long home_pos[AXIS_NUM]{32000,  32000,  32000,  0,  0,  0,  0,  0 }; 
+
+int home_dir_sdp[AXIS_NUM] {1,  1,  1,  1,  1,  1,  1,  1 };
+int motor_dir[AXIS_NUM] {1,  1,  1,  1,  1,  1,  1,  1 };
 //int steps_pr_mm[AXIS_NUM] { 800, 160, 240,240, 240, 240, 120, 100  };
 
-float steps_pr_mm_orig[AXIS_NUM] { 800, 80, 94,94, 94, 94, 47, 100  };
-float steps_pr_mm[AXIS_NUM] { 800, 80, 94,94, 94, 94, 47, 100  };
+float steps_pr_mm_orig[AXIS_NUM] { 80, 80, 80,94, 94, 94, 47, 100  };
+float steps_pr_mm[AXIS_NUM] { 80, 80, 80,94, 94, 94, 47, 100  };
 float steps_pr_mm_k[AXIS_NUM] { 1, 1, 1, 1, 1, 1, 1, 1};
 #else
 int motor_dir[AXIS_NUM] {1,  1,  1,  -1,  -1,  -1,  -1,  1  };
@@ -53,6 +61,7 @@ volatile bool _homing_need[AXIS_NUM]{false,false,false,false,false,false,false,f
 volatile bool _homed[AXIS_NUM]{false,false,false,false,false,false,false,false};     
 
 //#ifndef PRIMARY_PLATE
+
 volatile int _vibro[AXIS_NUM]{0,  0,  0,  1,  1,  1,  1,  1 }; 
 volatile int vibro_ampl[AXIS_NUM] {15,  15,  15,  10,  10,  10,  10,  10  };
 volatile int vibro_counter[AXIS_NUM] {1,  1,  1,  1,  1,  1,  1,  1  };
@@ -162,9 +171,12 @@ long prev_count = 0;
 long prev_time = 0;
 float prev_x = 0;
 float prev_y = 0;
+float prev_z = 0;
+float prev_e = 0;
+bool buf_work = false;
 void  StepDirDriverPos::ring_buf_control() 
 {
-  
+  buf_work = true;
   int ring_buf_cur = ring_buf_counter%RING_BUF_NUM;//current command all and in ring
   
   if(ring_buf_cur_count>=ring_buf_time[ring_buf_cur] - prev_count )
@@ -176,8 +188,8 @@ void  StepDirDriverPos::ring_buf_control()
    
     gotopos(ring_buf_x[ring_buf_cur], X_AXIS );
     gotopos(ring_buf_y[ring_buf_cur], Y_AXIS );
-    //gotopos(ring_buf_z[ring_buf_cur], Z_AXIS );
-    //gotopos(ring_buf_e[ring_buf_cur], E_AXIS );
+    gotopos(ring_buf_z[ring_buf_cur], Z_AXIS );
+    gotopos(ring_buf_e[ring_buf_cur], E_AXIS );
 
   
     long abs_time = ring_buf_time[ring_buf_cur];
@@ -199,6 +211,22 @@ void  StepDirDriverPos::ring_buf_control()
     if(cur_y==0) cur_y = 1;
     setDiv(abs((float)cur_time/(float)cur_y) , Y_AXIS);
     _dividerCount[Y_AXIS] = _divider[Y_AXIS];
+//---------------------------------------------------------------
+    long abs_z = ring_buf_z[ring_buf_cur];
+    long cur_z = abs_z - prev_z;
+    prev_z = abs_z;
+
+    if(cur_z==0) cur_z = 1;
+    setDiv(abs((float)cur_time/(float)cur_z) , Z_AXIS);
+    _dividerCount[Z_AXIS] = _divider[Z_AXIS];
+//---------------------------------------------------------------
+    long abs_e = ring_buf_e[ring_buf_cur];
+    long cur_e = abs_e - prev_e;
+    prev_e = abs_e;
+
+    if(cur_e==0) cur_e = 1;
+    setDiv(abs((float)cur_time/(float)cur_e) , E_AXIS);
+    _dividerCount[E_AXIS] = _divider[E_AXIS];
 
 
 
@@ -214,6 +242,15 @@ long control_counter = 0;
 void  StepDirDriverPos::control() {
   //for (byte i=AXIS_NUM-1; i>0;i--){ control(i); }
   if(ring_buf_en && ring_buf_counter<ring_buf_end) ring_buf_control();
+
+  if(!ring_buf_en && buf_work)
+  {
+    buf_work = false;
+    _steps[0] = 0;
+    _steps[1] = 0;
+    _steps[2] = 0;
+    _steps[3] = 0;
+  }
   control_counter++;
 
   control(7);
@@ -448,22 +485,68 @@ long int StepDirDriverPos::dist_to_steps(float dist, byte num)
 void  StepDirDriverPos::home_axis(byte num)
 {
   _homing_need[num] = true;
-  step(-100000L,num);
+  step(home_dir_sdp[num] * 100000L,num);
 }
 
+void   StepDirDriverPos::home_delta(float div_vel)
+{
+    setDiv(div_vel,X_AXIS);
+    setDiv(div_vel,Y_AXIS);
+    setDiv(div_vel,Z_AXIS);
 
+    home_axis(X_AXIS);
+    home_axis(Y_AXIS);
+    home_axis(Z_AXIS);
+}
 
+void   StepDirDriverPos::home_delta_calibr(float div_vel)
+{
+  setDiv(div_vel,X_AXIS);
+    setDiv(div_vel,Y_AXIS);
+    setDiv(div_vel,Z_AXIS);
+
+    delta_calibr = true;
+    step(0L,X_AXIS);
+      step(0L,Y_AXIS);
+      step(0L,Z_AXIS);
+      step(-home_dir_sdp[X_AXIS]*100000L,X_AXIS);
+      step(-home_dir_sdp[Y_AXIS]*100000L,Y_AXIS);
+      step(-home_dir_sdp[Z_AXIS]*100000L,Z_AXIS);
+}
 void  StepDirDriverPos::home_handler(byte _num)
 {
-   if(!_homing_need[_num]) return;
-    //Serial.println(READ(_pinStop[_num]));
-    if(READ(_pinStop[_num])==0){
+  if(delta_calibr && _num<3)
+  {
+
+    int end_val = READ(pin_stop_delta_calibr);
+
+    if(end_val ==0)
+    {
+      step(0L,X_AXIS);
+      step(0L,Y_AXIS);
+      step(0L,Z_AXIS);
+      delta_calibr = false;
+    }
+  }
+  else
+  {
+    if(!_homing_need[_num]) return;
+    int end_val = READ(_pinStop[_num]);
+    if(end_inv[_num])
+    {
+      if(end_val==0) end_val = 1;
+      else end_val = 0;
+    }
+    if(end_val ==1)
+    {
       _homing_need[_num] = false;
       _homed[_num] = true;
-       step(0L,_num);
-       setPos(0L,_num);
-       step(0.1f,_num);       
+      step(0L,_num);
+      setPos( home_pos[_num] ,_num);
+      step(-home_dir_sdp[_num]*100L,_num);       
     }
+  }
+  
 }
 
 void  StepDirDriverPos::home_handler()
@@ -579,14 +662,14 @@ void StepDirDriverPos::idle()
 
  if(!ring_buf_en)
  {
-counter_idle++;
-  if(counter_idle>100)
-  {
-    vel_handler();
-    counter_idle=0;
-  }
- //#endif
-  home_handler();
+    /*counter_idle++;
+    if(counter_idle>100)
+    {
+      vel_handler();
+      counter_idle=0;
+    }*/
+    //#endif
+    home_handler();
 
  }
   

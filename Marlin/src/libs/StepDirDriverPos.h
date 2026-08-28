@@ -29,6 +29,8 @@ class StepDirDriverPos {
       void  control(byte num); 
       void  ring_buf_control(); 
       void  home_axis(byte num);
+      void  home_delta(float div_vel);
+      void  home_delta_calibr(float div_vel);
       void  home_handler(byte num);
       void  home_handler();
       void  vel_handler(byte num);
@@ -85,10 +87,11 @@ class StepDirDriverPos {
 
     volatile long ring_buf_command_counter = 0;
     volatile long ring_buf_counter = 0;
-    volatile long ring_buf_lookup = 20;
+    volatile long ring_buf_lookup = 40;
     volatile long ring_buf_end = 0;
     volatile int ring_buf_cur_count = 0;
 
+    volatile bool delta_calibr = false;
 
     volatile long debug_count = 0;
 

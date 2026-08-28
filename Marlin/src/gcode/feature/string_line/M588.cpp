@@ -23,6 +23,6 @@ void GcodeSuite::M588() {
     if (parser.seen('A'))  motors.ring_buf_en = parser.intval('A');
      if (parser.seen('B'))  motors.ring_buf_lookup = parser.intval('B');
      if (parser.seen('C'))  motors.ring_buf_end= parser.intval('C');
-     if (parser.seen('D')) motors.ring_buf_counter = parser.intval('D');
-
+     if (parser.seen('D')) motors.ring_buf_counter = parser.intval('D'); 
+    if (parser.seen('F')) motors.ring_buf_all_counter_write = parser.intval('F');
 }

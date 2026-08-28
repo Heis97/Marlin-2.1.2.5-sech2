@@ -928,6 +928,7 @@ void GcodeSuite::process_parsed_command(bool no_ok) {
       case 586: M586(); break; 
       case 587: M587(); break; 
       case 588: M588(); break; 
+      case 589: M589(); break; 
 
 
       

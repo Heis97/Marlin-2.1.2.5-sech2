@@ -1479,15 +1479,16 @@ String StringPeriphery::state_cur()
     else if(cur_send==TENSOMETR_NUM+1)
     {
         state = "st1 "+
-        String(cur_line_num)+ delim+//0
-        String(motors.ring_buf_counter)+ delim+//1
+        String(cur_line_num)+delim+//0
+        String(motors.ring_buf_counter)+delim+//1
         String(motors._pos[0])+delim+//2
         String(motors._pos[1])+delim+//3
         String(motors._pos[2])+delim+//4
-        String(motors._pos[3])+delim+//5 
-        String(motors.control_counter)+delim;//6
+        String(motors._pos[3])+delim+//5
+        String(motors.control_counter)+delim+//6
+        String((int)motors.delta_calibr)+delim;//6
     }
-    
+
     else if(cur_send==TENSOMETR_NUM+2)
     {
         state = "st1 "+
