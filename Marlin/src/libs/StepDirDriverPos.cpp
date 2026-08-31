@@ -12,7 +12,7 @@ int dir_pins [AXIS_NUM] {X_DIR_PIN,   Y_DIR_PIN,   Z_DIR_PIN,   I_DIR_PIN,   J_D
 int en_pins  [AXIS_NUM] {X_ENABLE_PIN,Y_ENABLE_PIN,Z_ENABLE_PIN,I_ENABLE_PIN,J_ENABLE_PIN,K_ENABLE_PIN,U_ENABLE_PIN,E0_ENABLE_PIN};
 int stop_pins[AXIS_NUM] {X_DIAG_PIN,  Y_DIAG_PIN,  Z_DIAG_PIN,  I_DIAG_PIN,  J_DIAG_PIN,  K_DIAG_PIN,  U_DIAG_PIN,  E0_DIAG_PIN  };
 
-int pin_stop_delta_calibr = I_DIAG_PIN;
+
 
 #ifdef MAKET
 #ifdef PRIMARY_PLATE
@@ -117,6 +117,7 @@ StepDirDriverPos::StepDirDriverPos (int* pinStep, int* pinDir, int* pinEn, int* 
     
   }
 vibro_ampl[E0_AXIS] = 30;
+pin_stop_delta_calibr = J_DIAG_PIN;
 }
 
 
@@ -241,6 +242,9 @@ void  StepDirDriverPos::ring_buf_control()
 long control_counter = 0;
 void  StepDirDriverPos::control() {
   //for (byte i=AXIS_NUM-1; i>0;i--){ control(i); }
+
+  
+
   if(ring_buf_en && ring_buf_counter<ring_buf_end) ring_buf_control();
 
   if(!ring_buf_en && buf_work)
@@ -515,37 +519,41 @@ void   StepDirDriverPos::home_delta_calibr(float div_vel)
 }
 void  StepDirDriverPos::home_handler(byte _num)
 {
-  if(delta_calibr && _num<3)
-  {
 
+  if(_num==0)
+  {
     int end_val = READ(pin_stop_delta_calibr);
-
-    if(end_val ==0)
+    debug_val  = end_val;
+    if(delta_calibr )
     {
-      step(0L,X_AXIS);
-      step(0L,Y_AXIS);
-      step(0L,Z_AXIS);
-      delta_calibr = false;
+      if(end_val ==0)
+      {
+        step(0L,X_AXIS);
+        step(0L,Y_AXIS);
+        step(0L,Z_AXIS);
+        delta_calibr = false;
+      }
     }
   }
-  else
+  
+  
+  if(!_homing_need[_num]) return;
+  int end_val = READ(_pinStop[_num]);
+  
+  if(end_inv[_num])
   {
-    if(!_homing_need[_num]) return;
-    int end_val = READ(_pinStop[_num]);
-    if(end_inv[_num])
-    {
-      if(end_val==0) end_val = 1;
-      else end_val = 0;
-    }
-    if(end_val ==1)
-    {
-      _homing_need[_num] = false;
-      _homed[_num] = true;
-      step(0L,_num);
-      setPos( home_pos[_num] ,_num);
-      step(-home_dir_sdp[_num]*100L,_num);       
-    }
+    if(end_val==0) end_val = 1;
+    else end_val = 0;
   }
+  if(end_val ==1)
+  {
+    _homing_need[_num] = false;
+    _homed[_num] = true;
+    step(0L,_num);
+    setPos( home_pos[_num] ,_num);
+    // step(-home_dir_sdp[_num]*100L,_num);       
+  }
+  
   
 }
 
@@ -669,8 +677,9 @@ void StepDirDriverPos::idle()
       counter_idle=0;
     }*/
     //#endif
-    home_handler();
+    
 
  }
-  
+ if(ring_buf_counter>=ring_buf_end) ring_buf_en = false;
+  home_handler();
 }

@@ -1478,6 +1478,7 @@ String StringPeriphery::state_cur()
     
     else if(cur_send==TENSOMETR_NUM+1)
     {
+        int homing_delta_done =(int)( motors._homing_need[0]||motors._homing_need[1]||motors._homing_need[2]);
         state = "st1 "+
         String(cur_line_num)+delim+//0
         String(motors.ring_buf_counter)+delim+//1
@@ -1486,7 +1487,10 @@ String StringPeriphery::state_cur()
         String(motors._pos[2])+delim+//4
         String(motors._pos[3])+delim+//5
         String(motors.control_counter)+delim+//6
-        String((int)motors.delta_calibr)+delim;//6
+        String((int)motors.delta_calibr)+delim+//7  (int)motors.delta_calibr
+        String(motors.ring_buf_en)+delim+//8
+        String(homing_delta_done)+delim+//9
+        String(motors.debug_val )+delim;//10
     }
 
     else if(cur_send==TENSOMETR_NUM+2)

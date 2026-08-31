@@ -1,7 +1,7 @@
 ﻿
 
 #define AXIS_NUM 8
-#define RING_BUF_NUM 80
+#define RING_BUF_NUM 400
 #include <Arduino.h>
 #include "../inc/MarlinConfig.h"
 #include "../module/settings.h"
@@ -87,7 +87,7 @@ class StepDirDriverPos {
 
     volatile long ring_buf_command_counter = 0;
     volatile long ring_buf_counter = 0;
-    volatile long ring_buf_lookup = 40;
+    volatile long ring_buf_lookup = 200;
     volatile long ring_buf_end = 0;
     volatile int ring_buf_cur_count = 0;
 
@@ -100,7 +100,7 @@ class StepDirDriverPos {
     volatile unsigned long ring_buf_all_counter_write_max = 0;
 
     volatile bool ring_buf_en = false;
-        
+        volatile bool ring_buf_go = false;
 
       volatile long _steps[AXIS_NUM]{};// оставшееся число шагов 
       volatile long int _pos[AXIS_NUM]{}; 
@@ -109,7 +109,7 @@ class StepDirDriverPos {
       
       volatile  long  int  _dividerCount[AXIS_NUM]{};  
       volatile  int  _dividerCount_sub[AXIS_NUM]{};  
-
+       byte pin_stop_delta_calibr;
       unsigned long  _time_ch_vel;  
       unsigned long  _time_ch_vel_prev[AXIS_NUM]{}; 
 
@@ -119,7 +119,10 @@ class StepDirDriverPos {
       volatile float  _vel[AXIS_NUM]{};  
       volatile float  _vel_dest[AXIS_NUM]{};
       volatile float  _vel_prev[AXIS_NUM]{}; 
+      volatile bool _homing_need[AXIS_NUM]{};
       
+      int debug_val = 0;
+
       volatile float  _acs[AXIS_NUM]{};  
     private:
       int _pinStep[AXIS_NUM]{};
