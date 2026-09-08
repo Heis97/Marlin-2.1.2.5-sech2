@@ -100,35 +100,36 @@ class StepDirDriverPos {
     volatile unsigned long ring_buf_all_counter_write_max = 0;
 
     volatile bool ring_buf_en = false;
-        volatile bool ring_buf_go = false;
+    volatile bool ring_buf_go = false;
 
-      volatile long _steps[AXIS_NUM]{};// оставшееся число шагов 
-      volatile long int _pos[AXIS_NUM]{}; 
-        
-     // boolean _fixStop[AXIS_NUM];  // признак фиксации положения при остановке
+    volatile long _steps[AXIS_NUM]{};// оставшееся число шагов 
+    volatile long int _pos[AXIS_NUM]{}; 
       
-      volatile  long  int  _dividerCount[AXIS_NUM]{};  
-      volatile  int  _dividerCount_sub[AXIS_NUM]{};  
-       byte pin_stop_delta_calibr;
-      unsigned long  _time_ch_vel;  
-      unsigned long  _time_ch_vel_prev[AXIS_NUM]{}; 
+    // boolean _fixStop[AXIS_NUM];  // признак фиксации положения при остановке
+    
+    volatile  long  int  _dividerCount[AXIS_NUM]{};  
+    volatile  int  _dividerCount_sub[AXIS_NUM]{};  
+    byte pin_stop_delta_calibr;
+    unsigned long  _time_ch_vel;  
+    unsigned long  _time_ch_vel_prev[AXIS_NUM]{}; 
 
-      
-      volatile  long  int  _divider[AXIS_NUM]{};  
-      volatile  int  _divider_sub[AXIS_NUM]{}; 
-      volatile float  _vel[AXIS_NUM]{};  
-      volatile float  _vel_dest[AXIS_NUM]{};
-      volatile float  _vel_prev[AXIS_NUM]{}; 
-      volatile bool _homing_need[AXIS_NUM]{};
-      
-      int debug_val = 0;
+    
+    volatile  long  int  _divider[AXIS_NUM]{};  
+    volatile  int  _divider_sub[AXIS_NUM]{}; 
+    volatile float  _vel[AXIS_NUM]{};  
+    volatile float  _vel_dest[AXIS_NUM]{};
+    volatile float  _vel_prev[AXIS_NUM]{}; 
+    volatile bool _homing_need[AXIS_NUM]{};
+    
+    int debug_val = 0;
 
-      volatile float  _acs[AXIS_NUM]{};  
-    private:
-      int _pinStep[AXIS_NUM]{};
-      int  _pinDir[AXIS_NUM]{};
-      int  _pinEn [AXIS_NUM]{};
-      int  _pinStop [AXIS_NUM]{};
+    volatile float  _acs[AXIS_NUM]{};  
+    int  _pinStop [AXIS_NUM]{};
+  private:
+    int _pinStep[AXIS_NUM]{};
+    int  _pinDir[AXIS_NUM]{};
+    int  _pinEn [AXIS_NUM]{};
+    
 
       
       //long int koord[AXIS_NUM]{};     

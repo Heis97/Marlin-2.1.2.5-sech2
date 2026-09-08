@@ -1478,6 +1478,7 @@ String StringPeriphery::state_cur()
     
     else if(cur_send==TENSOMETR_NUM+1)
     {
+        motors.debug_val  = READ(motors._pinStop[3]);
         int homing_delta_done =(int)( motors._homing_need[0]||motors._homing_need[1]||motors._homing_need[2]);
         state = "st1 "+
         String(cur_line_num)+delim+//0
