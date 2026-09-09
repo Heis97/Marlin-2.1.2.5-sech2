@@ -1448,80 +1448,61 @@ String StringPeriphery::state_cur()
     String(temp_val_ext)+delim+//4
     String(orig_speed_tens_com)+delim+//5
     String(reley_24_out)+delim+//6  */
-    cur_send = 6;
-    String state = "";
-    if (cur_send==TENSOMETR_NUM+4){cur_send = 0;};
-    if(cur_send<TENSOMETR_NUM)
-    {       
-        int i = cur_send;
-        state = "st1 "+
-        String(cur_line_num)+ delim+//0
-        String(cur_send)+ delim+//1
-        String(string_move_second[i])+delim+//2
-        String(force_cur[i])+delim+//3
-        String((long)( 3.1415*r_tens* ((double)string_lenght_cur[i]/(double)4096)))+delim+//4
-        String(cur_speed_enc[i])+delim+//5  ///cur_speed_tens  cur_speed_enc[i]
-        String(force_dest[i])+delim;//6  //force_dest[i]
-    }
-
-    if(cur_send==TENSOMETR_NUM)
-    {
-        state = "st1 "+
-        String(cur_line_num)+ delim+//0
-        String(cur_send)+ delim+//1
-        String(temp_val_ext)+delim+//2  temp_val_ext
-        String(sec_remain)+delim+//3  heater_en
-        String(vibro_main)+delim+//4 
-        String(release_counter[0])+delim+//5
-        String(reley_HV)+delim;//6
-    }
     
-    else if(cur_send==TENSOMETR_NUM+1)
-    {
-        motors.debug_val  = READ(motors._pinStop[3]);
-        int homing_delta_done =(int)( motors._homing_need[0]||motors._homing_need[1]||motors._homing_need[2]);
-        state = "st1 "+
-        String(cur_line_num)+delim+//0
-        String(motors.ring_buf_counter)+delim+//1
-        String(motors._pos[0])+delim+//2
-        String(motors._pos[1])+delim+//3
-        String(motors._pos[2])+delim+//4
-        String(motors._pos[3])+delim+//5
-        String(motors.control_counter)+delim+//6
-        String((int)motors.delta_calibr)+delim+//7  (int)motors.delta_calibr
-        String(motors.ring_buf_en)+delim+//8
-        String(homing_delta_done)+delim+//9
-        String(motors.debug_val )+delim;//10
-    }
 
-    else if(cur_send==TENSOMETR_NUM+2)
+    String state = "";
+    if (cur_send>=3){cur_send = 0;};
+    
+    motors.debug_val  = READ(motors._pinStop[3]);
+    int homing_delta_done =(int)(motors._homing_need[0]||motors._homing_need[1]||motors._homing_need[2]);
+    state = "st1 "+
+    String(cur_line_num)+delim+            //0          //1
+    String(motors.ring_buf_counter)+delim+//1           //2
+    String(cur_send)+delim;               //2           //3  cur_send
+
+    if(cur_send==0)
     {
-        state = "st1 "+
-        String(cur_line_num)+ delim+//0
-        String(cur_send)+ delim+//1
-        String((int16_t)motors.readHoming_one(karet_axis))+delim+//2  //homing karet
-        String(ind_sensor)+delim+//3  
-        String(tare_tens_state)+delim+//4  //
-        String(pressure_dest)+delim+//5 //
-        String(temp_dest)+delim;//6 //
+        state += 
+        String(motors.control_counter)+delim+//3       //4
+        String((int)motors.delta_calibr)+delim+//4     //5
+        String(motors.ring_buf_en)+delim+//5           //6
+        String(homing_delta_done)+delim+//6            //7
+        "0 "+                           //7            //8
+        "0 "+                           //8            //9
+        "0 "+                           //9            //10
+        "0 ";                           //10            //11
+    }
+    else if(cur_send==1)
+    {
+        state += 
+        String(motors._pos[0])+delim+//3       //4
+        String(motors._pos[1])+delim+//4       //5
+        String(motors._pos[2])+delim+//5       //6
+        String(motors._pos[3])+delim+//6       //7
+        String(motors._pos[4])+delim+//7       //8
+        String(motors._pos[5])+delim+//8       //9
+        String(motors._pos[6])+delim+//9       //10
+        String(motors._pos[7])+delim;//10      //11
+    }
+    else if(cur_send==2)
+    {
+        state += 
+        String(motors._endstop_val[0])+delim+//3
+        String(motors._endstop_val[1])+delim+//4
+        String(motors._endstop_val[2])+delim+//5
+        String(motors._endstop_val[3])+delim+//6
+        String(motors._endstop_val[4])+delim+//7
+        String(motors._endstop_val[5])+delim+//8
+        String(motors._endstop_val[6])+delim+//9
+        String(motors._endstop_val[7])+delim;//10
+
         
     }
-    else if(cur_send==TENSOMETR_NUM+3)
-    {
-        state = "st1 "+
-        String(cur_line_num)+ delim+//0
-        String(cur_send)+ delim+//1
-        String(vel_count_2)+delim+//2 //
-        String((int)(integr_part*10000.0f))+delim+//3 //
-        String((int)(duty_1))+delim+//4 //
-        String((int)(sec_remain))+delim+//5 //sec_remain
-        "0"+delim;//6 //
 
 
-    }
-
-   // cur_send++;
+    cur_send++;
     
+
     return state;
 };
 

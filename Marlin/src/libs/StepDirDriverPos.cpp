@@ -22,6 +22,7 @@ int stop_pins[AXIS_NUM] {X_DIAG_PIN,  Y_DIAG_PIN,  Z_DIAG_PIN,  I_DIAG_PIN,  J_D
 //dev 10    {-1,  -1,  1,  1,  1,  1,  1,  1  };
 
 
+int _endstop_val[AXIS_NUM]{0,0,0,0,0,0,0,0 }; 
 bool end_inv[AXIS_NUM]{false,  false, false, true, true,  true, true, false }; 
 long home_pos[AXIS_NUM]{32000,  32000,  32000,  0,  0,  0,  0,  0 }; 
 
@@ -518,14 +519,14 @@ void StepDirDriverPos::home_handler(byte _num)
   
   
   if(!_homing_need[_num]) return;
-  int end_val = READ(_pinStop[_num]);
+  _endstop_val[_num] = READ(_pinStop[_num]);
   
   if(end_inv[_num])
   {
-    if(end_val==0) end_val = 1;
-    else end_val = 0;
+    if(_endstop_val[_num]==0) _endstop_val[_num] = 1;
+    else _endstop_val[_num] = 0;
   }
-  if(end_val==1)
+  if(_endstop_val[_num]==1)
   {
     _homing_need[_num] = false;
     _homed[_num] = true;

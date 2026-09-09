@@ -125,6 +125,7 @@ class StepDirDriverPos {
 
     volatile float  _acs[AXIS_NUM]{};  
     int  _pinStop [AXIS_NUM]{};
+     int  _endstop_val [AXIS_NUM]{};
   private:
     int _pinStep[AXIS_NUM]{};
     int  _pinDir[AXIS_NUM]{};
