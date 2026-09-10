@@ -252,9 +252,9 @@ long GCodeParser::parse_s(char *p) {
    // p += 2;                  // skip N[-0-9]
    //++p;
     do { com_num = com_num* 10 + *p++ - '0'; } while (NUMERIC(*p));
-       Serial.println("2");
+       //Serial.println("2");
     while (*p == ' ')   ++p; // skip [ ]*
-       Serial.println("3");
+       //Serial.println("3");
     
   }
 

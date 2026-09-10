@@ -750,12 +750,12 @@ void StringPeriphery::string_ethernet_loop_3() {
         if( Udp.read(rcvbuf_udp,sizeof(rcvbuf_udp))>0)
         {
             
-           /* for(int i=0; i< UDP_PACKET_LEN - 1;i++)
+            /*for(int i=0; i< UDP_PACKET_LEN - 1;i++)
             {
                 Serial.print(rcvbuf_udp[i]);
             }
-            Serial.println("s");
-            */
+            Serial.println("");*/
+            
             {
                 long new_com_num = parser.parse_s(rcvbuf_udp);
                 /*Serial.print(cur_line_num);
@@ -1496,6 +1496,15 @@ String StringPeriphery::state_cur()
         String(motors._endstop_val[6])+delim+//9
         String(motors._endstop_val[7])+delim;//10
 
+        /*String(motors._divider[0])+delim+//3
+        String(motors._divider[1])+delim+//4
+        String(motors._divider[2])+delim+//5
+        String(motors._divider[3])+delim+//6
+        String(motors._divider[4])+delim+//7
+        String(motors._divider[5])+delim+//8
+        String(motors._divider[6])+delim+//9
+        String(motors._divider[7])+delim;//10*/
+
         
     }
 
@@ -2003,7 +2012,6 @@ void StringPeriphery::comp_speeds_string()
         return;
     }
 
-
     speed_string_count++;
     for(int i=0; i<TENSOMETR_NUM;i++) 
     {
@@ -2014,10 +2022,8 @@ void StringPeriphery::comp_speeds_string()
             motors.set_cur_k(koef_tens[i]+p_part, motors_tens[i]);
             //cur_speed_tens[i] = koef_tens[i]*orig_speed_tens[i];
             motors.setVelDest(k_enc_abs* orig_speed_tens[i],motors_tens[i]);//k_enc_abs* 
-        }
-        
-    }
-    
+        }        
+    }   
     motors.setVelDest(k_enc_abs* orig_speed_tens_com,motor_com_axis);//k_enc_abs* 
 }
 

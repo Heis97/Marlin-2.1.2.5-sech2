@@ -23,7 +23,7 @@ int stop_pins[AXIS_NUM] {X_DIAG_PIN,  Y_DIAG_PIN,  Z_DIAG_PIN,  I_DIAG_PIN,  J_D
 
 
 int _endstop_val[AXIS_NUM]{0,0,0,0,0,0,0,0 }; 
-bool end_inv[AXIS_NUM]{false,  false, false, true, true,  true, true, false }; 
+int end_inv[AXIS_NUM]{0,  0, 0, 1, 1,  1, 1, 0 }; 
 long home_pos[AXIS_NUM]{32000,  32000,  32000,  0,  0,  0,  0,  0 }; 
 
 int home_dir_sdp[AXIS_NUM] {1,  1,  1,  1,  1,  1,  1,  1 };
@@ -234,7 +234,7 @@ void  StepDirDriverPos::control() {
     _steps[0] = 0;
     _steps[1] = 0;
     _steps[2] = 0;
-    _steps[3] = 0;
+    _steps[7] = 0;
   }
   control_counter++;
 
@@ -252,7 +252,9 @@ void  StepDirDriverPos::control() {
 //------------------------------- запуск вращения
 // инициирует поворот двигателя на заданное число шагов
 void  StepDirDriverPos::step(long steps, byte num) { 
-  
+  Serial.print(num);
+    Serial.print(" ");
+  Serial.println(steps);
 
   if(steps==0 ) {_steps[num]= 0; 
     #ifndef PRIMARY_PLATE
@@ -262,7 +264,7 @@ void  StepDirDriverPos::step(long steps, byte num) {
   //Serial.println(steps);
   
   //WRITE(_pinEn[num], LOW);
-  if (steps*motor_dir[num] < 0 )//*motor_dir[num]
+  if ( SIGN(steps)*motor_dir[num] < 0 )//*motor_dir[num]
    {
     WRITE(_pinDir[num], LOW);
     cur_dir[num] = 0;
@@ -274,12 +276,13 @@ void  StepDirDriverPos::step(long steps, byte num) {
     cur_dir[num] = 1;
   //Serial.println("dir high");
   }
-  _steps[num]= steps;
+  _steps[num]= (volatile long)steps;
 }
 
 void  StepDirDriverPos::step(float dist, byte num) {
 
   long d = dist_to_steps(dist,num);
+  
   step(d,num); 
 }
 
@@ -309,6 +312,8 @@ void StepDirDriverPos::sleep_string(byte motors_tens[5])
 }
 
 void  StepDirDriverPos::gotopos(long int koord, byte num) {
+   
+
 	  step(koord -_pos[num],num);
 }
 
@@ -517,15 +522,15 @@ void StepDirDriverPos::home_handler(byte _num)
     }
   }
   
-  
-  if(!_homing_need[_num]) return;
-  _endstop_val[_num] = READ(_pinStop[_num]);
-  
-  if(end_inv[_num])
+  _endstop_val[_num] = READ(_pinStop[_num]);  
+  if(end_inv[_num]>0)
   {
     if(_endstop_val[_num]==0) _endstop_val[_num] = 1;
     else _endstop_val[_num] = 0;
   }
+
+  if(!_homing_need[_num]) return;
+  
   if(_endstop_val[_num]==1)
   {
     _homing_need[_num] = false;
