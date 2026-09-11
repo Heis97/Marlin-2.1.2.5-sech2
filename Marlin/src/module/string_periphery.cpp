@@ -78,18 +78,6 @@ bool pfled_state_cur[10]{false,false,false,false,false,false,false,false,false,f
 
 void StringPeriphery::init()
 {
-    Serial.println("StringPeriphery::init");
-   #ifdef PRIMARY_PLATE
-
-   pinMode(TEMP_0_CS_PIN,OUTPUT);
-    pinMode(TEMP_1_CS_PIN,OUTPUT);
-    pinMode(TEMP_2_CS_PIN,OUTPUT);
-
-    WRITE(TEMP_0_CS_PIN,HIGH);
-    WRITE(TEMP_1_CS_PIN,HIGH);
-    WRITE(TEMP_2_CS_PIN,HIGH);
-
-
     pinMode(RELAY_0_PIN,OUTPUT);
     pinMode(RELAY_1_PIN,OUTPUT);
     pinMode(RELAY_2_PIN,OUTPUT);
@@ -97,113 +85,18 @@ void StringPeriphery::init()
     pinMode(RELAY_4_PIN,OUTPUT);
     pinMode(RELAY_5_PIN,OUTPUT);
 
-
     set_24v_out(0);
     set_24v_reset(0);
     set_reley_1(0);
     set_reley_2(0);
     set_reley_HV(0);
-    
-    //analog_inp.begin();
-    //analog_inp.setGain(0);
-
-    mcp4725_hv_v.begin();
-    mcp4725_hv_v.setValue(0);
-
-    mcp4725_press.begin();
-    mcp4725_press.setValue(0);
-
-    pcf_led1.begin(0x20);
-    pcf_led2.begin(0x21);
-
-    pcf_led1.pinMode(0,OUTPUT);
-    pcf_led1.pinMode(1,OUTPUT);
-    pcf_led1.pinMode(2,OUTPUT);
-    pcf_led1.pinMode(3,OUTPUT);
-    pcf_led1.pinMode(4,OUTPUT);
-    pcf_led1.pinMode(5,OUTPUT);
-    pcf_led1.pinMode(6,OUTPUT);
-    pcf_led1.pinMode(7,OUTPUT);
-
-    pcf_led2.pinMode(0,OUTPUT);
-    pcf_led2.pinMode(1,OUTPUT);
-
- #else
-    mcp4725_turbo.begin();
-    mcp4725_turbo.setValue(0);
-
-    SET_OUTPUT(LED_MC1_PIN);
-    SET_OUTPUT(LED_MC2_PIN);
-    WRITE(LED_MC1_PIN,LOW);
-    WRITE(LED_MC2_PIN,LOW);
-
-    SET_OUTPUT(VIBRO1_PIN);
-    WRITE(VIBRO1_PIN,LOW) ;
-    SET_OUTPUT(VIBRO2_PIN);
-    WRITE(VIBRO2_PIN,LOW) ;
-
-    SET_OUTPUT(LED_POUND);
-    WRITE(LED_POUND,HIGH) ;
-
-    SET_OUTPUT(FAN_PEREPH_PIN);
-    WRITE(FAN_PEREPH_PIN,HIGH) ;
-
-    SET_OUTPUT(FAN_BOX_PIN);
-    WRITE(FAN_BOX_PIN,HIGH) ;
-
-    //debug_vel1 = motors._vel_dest[camera_axis_e];
-    //debug_vel1 = motors.readVelDest(camera_axis_e);
-    motors.setVelDest(microsc_vel,mirror_axis_d);  
-    motors.setVelDest(microsc_vel,camera_axis_d);  
-    motors.setVelDest(microsc_vel,mirror_axis_e);  
-
-    motors.setVelDest(microsc_vel,camera_axis_e);  
-    //debug_vel3 = motors.readVelDest(camera_axis_e);
-
-    motors.setVelDest(recuperator_def_vel,recuperator_axis);
-
-    motors.setVelDest(gateway_def_vel,gateway_axis);
-    motors.setVelDest(VALVE_VEL,vibro_axis );    
-    motors.vibro_ampl[vibro_axis] = 1;
-    vibro_vel_valve = 12;
-    /*WRITE(VIBRO1_PIN,HIGH) ;
-
-    delay(1000);
-
-    WRITE(VIBRO1_PIN,LOW) ;
-    delay(1000);
-
-
-        delay(1000);*/
-     /*hal.set_pwm_duty(pin_t(VIBRO1_PIN), 10);
-     delay(1000);
-     hal.set_pwm_duty(pin_t(VIBRO1_PIN), 0);
-     delay(1000);
-     hal.set_pwm_duty(pin_t(VIBRO1_PIN), 255);
-     delay(1000);
-     hal.set_pwm_duty(pin_t(VIBRO1_PIN), 0);*/
- #endif
 
     
-    string_spi_begin();
 
-    #ifdef ETHERNET_TCP
-        string_tcp_ethernet_begin();
-    #else
-        string_ethernet_begin_3();
-    #endif
-    //Serial.println( "2");
-    //Serial.println( "2motors._vel_dest[camera_axis_e] ");
-    //Serial.println( motors._vel_dest[(uint)camera_axis_e]);
-    //
+    max_test1.begin();
+    DELAY_US(100000);
 
-
-  
-   /* motors.gotopos(1000000000l,X_AXIS);
-    motors.setDivider(100,0);
-    motors.gotopos(1000000000l,Y_AXIS);
-    motors.setDivider(200,1);*/
-
+    string_ethernet_begin_3();
 };
 
 
@@ -958,43 +851,26 @@ int led_counter = 0;
 
 void StringPeriphery::idle()
 {
-    
-    //manage_motion();
-    
-    //Serial.println(motors._divider[0]);
-
-    unsigned long cur_time = millis();
     unsigned long cur_time_mc = micros();
-    #ifdef CHECK_DELAYS 
-    counter++;
-    unsigned long cur_d_idle = cur_time_mc - cur_time_prev;
-    if(cur_d_idle>50)
-    {
-        Serial.print(counter);
-        Serial.print(" ");
-        Serial.println(cur_d_idle);
-        counter = 0;
-    } 
-    cur_time_prev = cur_time_mc;
-    #endif
-    
-    unsigned long dt = (cur_time- time_measure);
     unsigned long dt_mc = (cur_time_mc- time_measure_mc);
-    unsigned long dt_spi =  (cur_time - time_measure_spi);
+    unsigned long dt_temp = (cur_time_mc- time_measure_temp);
 
-    unsigned long dt_test_loop =  (cur_time - time_measure_test_loop);
-    unsigned long dt_bunk_vibro =  (cur_time - time_measure_bunk_vibro);
-    
     if(dt_mc>ETHERNET_PERIOD_MCS)
     {
-        /*Serial.print("v1: ");
-        Serial.print(debug_vel1);
-        Serial.print(";v2: ");
-        Serial.print(debug_vel2);
-        Serial.print(";v3: ");
-        Serial.println(debug_vel3);*/
         time_measure_mc = cur_time_mc;
         string_ethernet_loop_3();
+    }
+
+    if(dt_temp>period_manage_mcs  )
+    {
+        
+        uint16_t temp_raw = max_test1.readRaw();
+        thermalManager.temp_hotend[0].setraw(temp_raw);
+        float chamber_temp_cur = max_test1.temperature();
+        thermalManager.temp_hotend[0].celsius = (float)chamber_temp_cur;
+        temp_val_ext = temp_val_ext - 0.007*(temp_val_ext-chamber_temp_cur);   
+
+        time_measure_temp = cur_time_mc;
     }
 
     //--------------------------------------------------------
@@ -1357,6 +1233,22 @@ void StringPeriphery::set_reley_1(int v)
     //Serial.print("rel 1 ");
     //Serial.println(v_set);
 };
+
+void StringPeriphery::set_reley_i(int v, int i)
+{
+    int v_set = v;
+    switch(i)
+    {
+        case 0: {WRITE(RELAY_0_PIN,v_set);break;};
+        case 1: {WRITE(RELAY_1_PIN,v_set);break;};
+        case 2: {WRITE(RELAY_2_PIN,v_set);break;};
+        case 3: {WRITE(RELAY_3_PIN,v_set);break;};
+    }
+
+    reley_1 = v;
+
+};
+
 void StringPeriphery::set_reley_2(int v)
 {
    int v_set = v;
@@ -1451,7 +1343,7 @@ String StringPeriphery::state_cur()
     
 
     String state = "";
-    if (cur_send>=3){cur_send = 0;};
+    if (cur_send>=4){cur_send = 0;};
     
     motors.debug_val  = READ(motors._pinStop[3]);
     int homing_delta_done =(int)(motors._homing_need[0]||motors._homing_need[1]||motors._homing_need[2]);
@@ -1467,7 +1359,7 @@ String StringPeriphery::state_cur()
         String((int)motors.delta_calibr)+delim+//4     //5
         String(motors.ring_buf_en)+delim+//5           //6
         String(homing_delta_done)+delim+//6            //7
-        "0 "+                           //7            //8
+        String((int)thermalManager.temp_hotend[0].celsius)+delim+                           //7            //8
         "0 "+                           //8            //9
         "0 "+                           //9            //10
         "0 ";                           //10            //11
@@ -1496,18 +1388,31 @@ String StringPeriphery::state_cur()
         String(motors._endstop_val[6])+delim+//9
         String(motors._endstop_val[7])+delim;//10
 
-        /*String(motors._divider[0])+delim+//3
-        String(motors._divider[1])+delim+//4
-        String(motors._divider[2])+delim+//5
-        String(motors._divider[3])+delim+//6
-        String(motors._divider[4])+delim+//7
-        String(motors._divider[5])+delim+//8
-        String(motors._divider[6])+delim+//9
-        String(motors._divider[7])+delim;//10*/
+       /*String(motors.servo_counter_20ms[0])+delim+//3
+        String(motors.servo_counter_20ms[1])+delim+//4
+        String(motors.servo_counter_20ms_max[0])+delim+//5
+        String(motors.servo_counter_20ms_max[1])+delim+//6
+        String(motors.servo_counter_work[0])+delim+//7
+        String(motors.servo_counter_work[1])+delim+//8
+        String(motors.servo_counter_work_max[0])+delim+//9
+        String(motors.servo_counter_work_max[1])+delim;//10*/
 
         
     }
+    else if(cur_send==3)
+    {
+        state += 
+        String((int)thermalManager.temp_hotend[0].target)+delim+//3
+        String(motors._endstop_val[1])+delim+//4
+        String(motors._endstop_val[2])+delim+//5
+        String(motors._endstop_val[3])+delim+//6
+        String(motors._endstop_val[4])+delim+//7
+        String(motors._endstop_val[5])+delim+//8
+        String(motors._endstop_val[6])+delim+//9
+        String(motors._endstop_val[7])+delim;//10
 
+        
+    }
 
     cur_send++;
     
@@ -1859,11 +1764,33 @@ void StringPeriphery::heat_pwm_control_single(int ind, int counter, int duty)
 void StringPeriphery::set_heaters_enable(int v)
 {
     heater_en = v;
+
+    if(heater_en == 1)
+    {
+        thermalManager.setTargetHotend(temp_dest, 0);
+       
+    }
+    else
+    {
+         thermalManager.disable_all_heaters();
+    }
+    
+
 };
 void StringPeriphery::set_heaters_temp(float v)
 {
     temp_dest = v;
+
+    if(heater_en == 1)
+    {
+        thermalManager.setTargetHotend(temp_dest, 0);
+    }
+    else
+    {
+        thermalManager.disable_all_heaters();
+    }
 };
+
 void StringPeriphery::set_heaters_ind(int v)
 {
     ind_sensor = v;

@@ -5,17 +5,12 @@
 
 void GcodeSuite::M577() {
   #ifdef PRIMARY_PLATE
-  if (parser.seen('V')) 
+  if (parser.seen('V') && parser.seen('I')) 
   {
-    string_manager.set_hv_v(parser.intval('V'));
+    motors.servo_counter_work_max[parser.intval('I')] = (long)parser.intval('V');
   } 
-  if (parser.seen('I')) 
-  {
-    string_manager.set_hv_i(parser.intval('I'));
-  } 
-  if (parser.seen('G')) 
-  {
-    string_manager.get_v_hv();
-  } 
+
+
+
   #endif
 }

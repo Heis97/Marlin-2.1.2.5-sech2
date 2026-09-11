@@ -7,19 +7,7 @@ void GcodeSuite::M579() {
   #ifdef PRIMARY_PLATE
   if (parser.seen('S') && parser.seen('I')) 
   {
-    switch (parser.intval('I'))
-    {
-    case 0: string_manager.set_reley_1(parser.intval('S')); break;
-    case 1: string_manager.set_reley_2(parser.intval('S')); break;
-    case 2: string_manager.set_reley_HV(parser.intval('S')); break;
-    case 3: string_manager.set_reley_press(parser.intval('S')); break;    
-    case 4: string_manager.set_heater_2(parser.intval('S')); break; 
-    case 5: string_manager.set_heater_3(parser.intval('S')); break; 
-    case 6: string_manager.set_24v_out(parser.intval('S')); break; 
-    case 7: string_manager.set_24v_reset(parser.intval('S')); break; 
-    default:
-      break;
-    }
+    string_manager.set_reley_i(parser.intval('S'),parser.intval('I'));
   } 
   if (parser.seen('G')) 
   {

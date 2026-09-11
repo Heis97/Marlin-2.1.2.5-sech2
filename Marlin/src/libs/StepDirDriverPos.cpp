@@ -13,6 +13,13 @@ int en_pins  [AXIS_NUM] {X_ENABLE_PIN,Y_ENABLE_PIN,Z_ENABLE_PIN,I_ENABLE_PIN,J_E
 int stop_pins[AXIS_NUM] {X_DIAG_PIN,  Y_DIAG_PIN,  Z_DIAG_PIN,  I_DIAG_PIN,  J_DIAG_PIN,  K_DIAG_PIN,  U_DIAG_PIN,  E0_DIAG_PIN  };
 
 
+int servo_pins[SERVO_NUM]{SERVO_C1_PIN ,SERVO_C2_PIN };
+
+volatile long servo_counter_work[SERVO_NUM]{0,0};
+volatile long servo_counter_work_max[SERVO_NUM]{120,120};
+volatile long servo_counter_20ms[SERVO_NUM]{0,0};
+volatile long servo_counter_20ms_max[SERVO_NUM]{2000,2000}; //20ms
+    
 
 #ifdef PRIMARY_PLATE
 //dev 1    {-1,  -1,  -1,  1,  1,  1,  1,  1  };
@@ -23,7 +30,7 @@ int stop_pins[AXIS_NUM] {X_DIAG_PIN,  Y_DIAG_PIN,  Z_DIAG_PIN,  I_DIAG_PIN,  J_D
 
 
 int _endstop_val[AXIS_NUM]{0,0,0,0,0,0,0,0 }; 
-int end_inv[AXIS_NUM]{0,  0, 0, 1, 1,  1, 1, 0 }; 
+int end_inv[AXIS_NUM]{0, 0, 0, 1, 1, 1, 1, 0 }; 
 long home_pos[AXIS_NUM]{32000,  32000,  32000,  0,  0,  0,  0,  0 }; 
 
 int home_dir_sdp[AXIS_NUM] {1,  1,  1,  1,  1,  1,  1,  1 };
@@ -102,8 +109,15 @@ StepDirDriverPos::StepDirDriverPos (int* pinStep, int* pinDir, int* pinEn, int* 
     vibro_ampl[i] = 15;    
   }
 
-vibro_ampl[E0_AXIS] = 30;
-pin_stop_delta_calibr = E0_DIAG_PIN;
+  vibro_ampl[E0_AXIS] = 30;
+  pin_stop_delta_calibr = E0_DIAG_PIN;
+
+  for(int i=0; i<SERVO_NUM;i++)
+  {
+    SET_OUTPUT(servo_pins[i]); 
+    servo_counter_20ms_max[i] = 2000;
+    servo_counter_work_max[i] = 120;
+  }
 }
 
 
@@ -221,6 +235,29 @@ void  StepDirDriverPos::ring_buf_control()
 }
 
 long control_counter = 0;
+bool servo_counter_work_en[SERVO_NUM] {false,false};
+void  StepDirDriverPos::control_servo(byte num)
+{
+  servo_counter_20ms[num]++;
+  if(servo_counter_20ms[num]>servo_counter_20ms_max[num])
+  {
+    servo_counter_work_en[num] = true;
+    servo_counter_20ms[num] = 0L;
+    WRITE(servo_pins[num],1);
+  }
+
+  if(servo_counter_work_en[num])
+  {
+    servo_counter_work[num]++;
+    if(servo_counter_work[num]>servo_counter_work_max[num])
+    {
+      WRITE(servo_pins[num],0);
+      servo_counter_work_en[num] = false;
+      servo_counter_work[num] = 0L;
+    }
+  }
+} 
+
 void  StepDirDriverPos::control() {
   //for (byte i=AXIS_NUM-1; i>0;i--){ control(i); }
 
@@ -246,14 +283,16 @@ void  StepDirDriverPos::control() {
   control(2);
   control(1);
   control(0);
-  
+
+  control_servo(0);
+  control_servo(1);
   
 }
 //------------------------------- запуск вращения
 // инициирует поворот двигателя на заданное число шагов
 void  StepDirDriverPos::step(long steps, byte num) { 
   Serial.print(num);
-    Serial.print(" ");
+  Serial.print(" ");
   Serial.println(steps);
 
   if(steps==0 ) {_steps[num]= 0; 
@@ -552,6 +591,7 @@ void  StepDirDriverPos::vel_handler(byte _num)
 {
     if(_steps[_num]== 0) {
        _vel[_num]= 0; 
+       _vel_prev[_num]= 0; 
        return;
       }
     unsigned long  _dt_time_ch_vel = _time_ch_vel-_time_ch_vel_prev[_num];

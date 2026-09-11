@@ -128,6 +128,7 @@ float get_temp_cam_ext();
 float get_temp_cam_intern1();
 float get_temp_cam_intern2();
 
+void set_reley_i(int v, int i);
 void set_reley_1(int v);
 void set_reley_2(int v);
 void set_reley_heater(int ind,int v);
@@ -249,7 +250,7 @@ float kp_1 = 140;//
 float kp_2 = 140;//
 #endif
 int cycle_time = 10000;
-int period_manage_mcs = 1000;
+int period_manage_mcs = 200000;
 
 volatile int gateway_move = 0;
 volatile int recuperator_move = 0;

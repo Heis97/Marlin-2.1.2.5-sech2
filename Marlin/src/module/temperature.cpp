@@ -1562,16 +1562,8 @@ void Temperature::mintemp_error(const heater_id_t heater_id) {
 
   void Temperature::manage_hotends(const millis_t &ms) {
     HOTEND_LOOP() {
-      #if ENABLED(THERMAL_PROTECTION_HOTENDS)
-        if (degHotend(e) > temp_range[e].maxtemp) maxtemp_error((heater_id_t)e);
-      #endif
 
-      TERN_(HEATER_IDLE_HANDLER, heater_idle[e].update(ms));
-
-      #if ENABLED(THERMAL_PROTECTION_HOTENDS)
-        // Check for thermal runaway
-        tr_state_machine[e].run(temp_hotend[e].celsius, temp_hotend[e].target, (heater_id_t)e, THERMAL_PROTECTION_PERIOD, THERMAL_PROTECTION_HYSTERESIS);
-      #endif
+    TERN_(HEATER_IDLE_HANDLER, heater_idle[e].update(ms));
 
       temp_hotend[e].soft_pwm_amount = (temp_hotend[e].celsius > temp_range[e].mintemp || is_preheating(e)) && temp_hotend[e].celsius < temp_range[e].maxtemp ? (int)get_pid_output_hotend(e) >> 1 : 0;
 
@@ -1921,10 +1913,10 @@ void Temperature::task() {
     #warning "Safety Alert! Disable IGNORE_THERMOCOUPLE_ERRORS for the final build!"
   #endif
 
-  const millis_t ms = millis();*/
-
+  */
+const millis_t ms = millis();
   // Handle Hotend Temp Errors, Heating Watch, etc.
- //TERN_(HAS_HOTEND, manage_hotends(ms));
+ TERN_(HAS_HOTEND, manage_hotends(ms));
 
   /* #if HAS_TEMP_REDUNDANT
     // Make sure measured temperatures are close together
@@ -1957,8 +1949,8 @@ void Temperature::task() {
       }
     #endif
   #endif
-
-  UNUSED(ms);*/
+*/
+  UNUSED(ms);
 }
 
 #define TEMP_AD595(RAW)  ((RAW) * 5.0 * 100.0 / float(HAL_ADC_RANGE) / (OVERSAMPLENR) * (TEMP_SENSOR_AD595_GAIN) + TEMP_SENSOR_AD595_OFFSET)
@@ -2374,7 +2366,7 @@ void Temperature::updateTemperaturesFromRawValues() {
 
   hal.watchdog_refresh(); // Reset because raw_temps_ready was set by the interrupt
 
-  #if TEMP_SENSOR_IS_MAX_TC(0)
+  /*#if TEMP_SENSOR_IS_MAX_TC(0)
     temp_hotend[0].setraw(READ_MAX_TC(0));
   #endif
   #if TEMP_SENSOR_IS_MAX_TC(1)
@@ -2402,7 +2394,7 @@ void Temperature::updateTemperaturesFromRawValues() {
   TERN_(HAS_TEMP_REDUNDANT, temp_redundant.celsius = analog_to_celsius_redundant(temp_redundant.getraw()));
 
   TERN_(FILAMENT_WIDTH_SENSOR, filwidth.update_measured_mm());
-  TERN_(HAS_POWER_MONITOR,     power_monitor.capture_values());
+  TERN_(HAS_POWER_MONITOR,     power_monitor.capture_values());*/
 
   #if HAS_HOTEND
     static constexpr int8_t temp_dir[HOTENDS] = {
@@ -2431,18 +2423,13 @@ void Temperature::updateTemperaturesFromRawValues() {
       #endif
     };
 
-    HOTEND_LOOP() {
+    /*HOTEND_LOOP() {
       const raw_adc_t r = temp_hotend[e].getraw();
       const bool neg = temp_dir[e] < 0, pos = temp_dir[e] > 0;
       if ((neg && r < temp_range[e].raw_max) || (pos && r > temp_range[e].raw_max))
         maxtemp_error((heater_id_t)e);
 
-      /**
-      // DEBUG PREHEATING TIME
-      SERIAL_ECHOLNPGM("\nExtruder = ", e, " Preheat On/Off = ", is_preheating(e));
-      const float test_is_preheating = (preheat_end_ms_hotend[HOTEND_INDEX] - millis()) * 0.001f;
-      if (test_is_preheating < 31) SERIAL_ECHOLNPGM("Extruder = ", e, " Preheat remaining time = ", test_is_preheating, "s", "\n");
-      //*/
+     
 
       const bool heater_on = temp_hotend[e].target > 0;
       if (heater_on && !is_preheating(e) && ((neg && r > temp_range[e].raw_min) || (pos && r < temp_range[e].raw_min))) {
@@ -2452,7 +2439,7 @@ void Temperature::updateTemperaturesFromRawValues() {
       else {
         TERN_(MULTI_MAX_CONSECUTIVE_LOW_TEMP_ERR, consecutive_low_temperature_error[e] = 0);
       }
-    }
+    }*/
 
   #endif // HAS_HOTEND
 
@@ -3397,7 +3384,7 @@ void Temperature::disable_all_heaters() {
 void Temperature::update_raw_temperatures() {
 
   // TODO: can this be collapsed into a HOTEND_LOOP()?
-  #if HAS_TEMP_ADC_0 && !TEMP_SENSOR_IS_MAX_TC(0)
+  /*#if HAS_TEMP_ADC_0 && !TEMP_SENSOR_IS_MAX_TC(0)
     temp_hotend[0].update();
   #endif
 
@@ -3430,7 +3417,7 @@ void Temperature::update_raw_temperatures() {
 
   TERN_(HAS_JOY_ADC_X, joystick.x.update());
   TERN_(HAS_JOY_ADC_Y, joystick.y.update());
-  TERN_(HAS_JOY_ADC_Z, joystick.z.update());
+  TERN_(HAS_JOY_ADC_Z, joystick.z.update());*/
 }
 
 /**

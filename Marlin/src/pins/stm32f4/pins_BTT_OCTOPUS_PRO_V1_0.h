@@ -49,10 +49,10 @@
 
 #include "pins_BTT_OCTOPUS_V1_common_I_inv.h"
 
-#define RELAY_0_PIN  PE9
-#define RELAY_1_PIN  PE10
-#define RELAY_2_PIN  PE12
-#define RELAY_3_PIN  PE13
+#define RELAY_0_PIN  PA0
+#define RELAY_1_PIN  PA3
+#define RELAY_2_PIN  PB0
+#define RELAY_3_PIN  PB11
 #define RELAY_4_PIN  PE14
 #define RELAY_5_PIN  PE15
 

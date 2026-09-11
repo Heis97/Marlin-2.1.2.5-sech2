@@ -39,6 +39,9 @@
 #define I2C_SCL_PIN                       PB8
 #define I2C_SDA_PIN                       PB9
 
+#define SERVO_C1_PIN                       PA9
+#define SERVO_C2_PIN                       PA10
+
 
 //#define I2C_SCL_PIN                       PA9
 //#define I2C_SDA_PIN                       PA10
@@ -274,11 +277,11 @@
 //
 // Heaters / Fans
 //
-#define HEATER_BED_PIN                   -1//   PA10 //PA10  // Hotbed
-#define HEATER_0_PIN                        PA0   // Heater0//PA0
+#define HEATER_BED_PIN                   -1//   PA0 //PA10  // Hotbed
+#define HEATER_0_PIN                        PA1 //PA0  // Heater0//PA0
 #define HEATER_1_PIN                        -1//PA3   // Heater1
-#define HEATER_2_PIN                       PB0  // Heater2 PB0   //PA8
-#define HEATER_3_PIN                       PB11// PB11  // Heater3
+#define HEATER_2_PIN                       -1  // Heater2 PB0   //PA8
+#define HEATER_3_PIN                       -1// PB11  // Heater3
 
 #define FAN0_PIN                            PA8   // Fan0//PA8   //PB0
 #define FAN1_PIN                            PE5   // Fan1
@@ -298,38 +301,8 @@
   #endif
 #endif
 
-//
-// SPI pins for TMC2130 stepper drivers
-//
-/*#ifndef TMC_SPI_MOSI
-  #define TMC_SPI_MOSI                      PA7
-#endif
-#ifndef TMC_SPI_MISO
-  #define TMC_SPI_MISO                      PA6
-#endif
-#ifndef TMC_SPI_SCK
-  #define TMC_SPI_SCK                       PA5
-#endif
-*/
-#if HAS_TMC_UART
-  /**
-   * TMC2208/TMC2209 stepper drivers
-   *
-   * Hardware serial communication ports.
-   * If undefined software serial is used according to the pins below
-   */
-  //#define X_HARDWARE_SERIAL  Serial1
-  //#define X2_HARDWARE_SERIAL Serial1
-  //#define Y_HARDWARE_SERIAL  Serial1
-  //#define Y2_HARDWARE_SERIAL Serial1
-  //#define Z_HARDWARE_SERIAL  Serial1
-  //#define Z2_HARDWARE_SERIAL Serial1
-  //#define E0_HARDWARE_SERIAL Serial1
-  //#define E1_HARDWARE_SERIAL Serial1
-  //#define E2_HARDWARE_SERIAL Serial1
-  //#define E3_HARDWARE_SERIAL Serial1
-  //#define E4_HARDWARE_SERIAL Serial1
 
+#if HAS_TMC_UART
 
 
   // Reduce baud rate to improve software serial reliability
@@ -366,191 +339,12 @@
 #define EXP2_07_PIN                         -1
 #define EXP2_08_PIN                         -1
 
-//
-// Onboard SD card
-// Must use soft SPI because Marlin's default hardware SPI is tied to LCD's EXP2
-//
-#if SD_CONNECTION_IS(ONBOARD)
-  #define ONBOARD_SDIO                            // Use SDIO for onboard SD
-  #ifndef SD_DETECT_STATE
-    #define SD_DETECT_STATE HIGH
-  #elif SD_DETECT_STATE == LOW
-    #error "BOARD_BTT_OCTOPUS_V1_0 onboard SD requires SD_DETECT_STATE set to HIGH."
-  #endif
-  #define SD_DETECT_PIN                     PC14
-#elif SD_CONNECTION_IS(LCD)
-
-  #define SDSS                              PA4
-  #define SD_SS_PIN                         SDSS
-  #define SD_SCK_PIN                        PA5
-  #define SD_MISO_PIN                       PA6
-  #define SD_MOSI_PIN                       PA7
-  #define SD_DETECT_PIN                     PC15
-  #error "LCD don t need"
-#elif SD_CONNECTION_IS(CUSTOM_CABLE)
-  #error "CUSTOM_CABLE is not a supported SDCARD_CONNECTION for this board"
-#endif
-
-#if ENABLED(BTT_MOTOR_EXPANSION)
-  /**
-   *         ------                  ------
-   * M3DIAG | 1  2 | M3RX     M3STP | 1  2 | M3DIR
-   * M2DIAG | 3  4 | M2RX     M2STP | 3  4 | M2DIR
-   * M1DIAG   5  6 | M1RX     M1DIR   5  6 | M1STP
-   *   M3EN | 7  8 | M2EN      M1EN | 7  8 | --
-   *    GND | 9 10 | --         GND | 9 10 | --
-   *        ------                   ------
-   *         EXP1                     EXP2
-   */
-
-  // M1 on Driver Expansion Module
-  #define E4_STEP_PIN                EXP2_06_PIN
-  #define E4_DIR_PIN                 EXP2_05_PIN
-  #define E4_ENABLE_PIN              EXP2_07_PIN
-  #define E4_DIAG_PIN                EXP1_05_PIN
-  #define E4_CS_PIN                  EXP1_06_PIN
-  #if HAS_TMC_UART
-    #define E4_SERIAL_TX_PIN         EXP1_06_PIN
-  #endif
-
-  // M2 on Driver Expansion Module
-  #define E5_STEP_PIN                EXP2_03_PIN
-  #define E5_DIR_PIN                 EXP2_04_PIN
-  #define E5_ENABLE_PIN              EXP1_08_PIN
-  #define E5_DIAG_PIN                EXP1_03_PIN
-  #define E5_CS_PIN                  EXP1_04_PIN
-  #if HAS_TMC_UART
-    #define E5_SERIAL_TX_PIN         EXP1_04_PIN
-  #endif
-
-  // M3 on Driver Expansion Module
-  #define E6_STEP_PIN                EXP2_01_PIN
-  #define E6_DIR_PIN                 EXP2_02_PIN
-  #define E6_ENABLE_PIN              EXP1_07_PIN
-  #define E6_DIAG_PIN                EXP1_01_PIN
-  #define E6_CS_PIN                  EXP1_02_PIN
-  #if HAS_TMC_UART
-    #define E6_SERIAL_TX_PIN         EXP1_02_PIN
-  #endif
-
-#endif // BTT_MOTOR_EXPANSION
 
 //
 // LCD / Controller
 //
 
-#if IS_TFTGLCD_PANEL
 
-  #if ENABLED(TFTGLCD_PANEL_SPI)
-    #define TFTGLCD_CS               EXP2_03_PIN
-  #endif
-
-#elif HAS_DWIN_E3V2 || IS_DWIN_MARLINUI
-  /**
-   *        ------                 ------            ---
-   *       | 1  2 |               | 1  2 |            1 |
-   *       | 3  4 |            RX | 3  4 | TX       | 2 | RX
-   *   ENT   5  6 | BEEP      ENT   5  6 | BEEP     | 3 | TX
-   *     B | 7  8 | A           B | 7  8 | A        | 4 |
-   *   GND | 9 10 | VCC       GND | 9 10 | VCC        5 |
-   *        ------                 ------            ---
-   *         EXP1                   DWIN             TFT
-   *
-   * DWIN pins are labeled as printed on DWIN PCB. GND, VCC, A, B, ENT & BEEP can be connected in the same
-   * orientation as the existing plug/DWIN to EXP1. TX/RX need to be connected to the TFT port, with TX->RX, RX->TX.
-   */
-
-  CONTROLLER_WARNING("BTT_OCTOPUS_V1_common", "Ender-3 V2 display")
-
-  #define BEEPER_PIN                 EXP1_06_PIN
-  #define BTN_EN1                    EXP1_08_PIN
-  #define BTN_EN2                    EXP1_07_PIN
-  #define BTN_ENC                    EXP1_05_PIN
-
-#elif HAS_WIRED_LCD
-
-  #define BEEPER_PIN                 EXP1_01_PIN
-  #define BTN_ENC                    EXP1_02_PIN
-
-  #if ENABLED(CR10_STOCKDISPLAY)
-
-    #define LCD_PINS_RS              EXP1_07_PIN
-
-    #define BTN_EN1                  EXP1_03_PIN
-    #define BTN_EN2                  EXP1_05_PIN
-
-    #define LCD_PINS_EN              EXP1_08_PIN
-    #define LCD_PINS_D4              EXP1_06_PIN
-
-  #else
-
-    #define LCD_PINS_RS              EXP1_04_PIN
-
-    #define BTN_EN1                  EXP2_03_PIN
-    #define BTN_EN2                  EXP2_05_PIN
-
-    #define LCD_PINS_EN              EXP1_03_PIN
-    #define LCD_PINS_D4              EXP1_05_PIN
-
-    #if ENABLED(FYSETC_MINI_12864)
-      #define DOGLCD_CS              EXP1_03_PIN
-      #define DOGLCD_A0              EXP1_04_PIN
-      //#define LCD_BACKLIGHT_PIN           -1
-      #define LCD_RESET_PIN          EXP1_05_PIN  // Must be high or open for LCD to operate normally.
-      #if ANY(FYSETC_MINI_12864_1_2, FYSETC_MINI_12864_2_0)
-        #ifndef RGB_LED_R_PIN
-          #define RGB_LED_R_PIN      EXP1_06_PIN
-        #endif
-        #ifndef RGB_LED_G_PIN
-          #define RGB_LED_G_PIN      EXP1_07_PIN
-        #endif
-        #ifndef RGB_LED_B_PIN
-          #define RGB_LED_B_PIN      EXP1_08_PIN
-        #endif
-      #elif ENABLED(FYSETC_MINI_12864_2_1)
-        #define NEOPIXEL_PIN         EXP1_06_PIN
-      #endif
-    #endif // !FYSETC_MINI_12864
-
-    #if IS_ULTIPANEL
-      #define LCD_PINS_D5            EXP1_06_PIN
-      #define LCD_PINS_D6            EXP1_07_PIN
-      #define LCD_PINS_D7            EXP1_08_PIN
-
-      #if ENABLED(REPRAP_DISCOUNT_FULL_GRAPHIC_SMART_CONTROLLER)
-        #define BTN_ENC_EN           LCD_PINS_D7  // Detect the presence of the encoder
-      #endif
-
-    #endif
-
-  #endif
-
-#endif // HAS_WIRED_LCD
-
-// Alter timing for graphical display
-#if IS_U8GLIB_ST7920
-  #define BOARD_ST7920_DELAY_1               120
-  #define BOARD_ST7920_DELAY_2                80
-  #define BOARD_ST7920_DELAY_3               580
-#endif
-
-#if HAS_SPI_TFT
-  #define TFT_CS_PIN                 EXP2_04_PIN
-  #define TFT_A0_PIN                 EXP2_07_PIN
-  #define TFT_SCK_PIN                EXP2_02_PIN
-  #define TFT_MISO_PIN               EXP2_01_PIN
-  #define TFT_MOSI_PIN               EXP2_06_PIN
-
-  #define TOUCH_INT_PIN              EXP1_07_PIN
-  #define TOUCH_MISO_PIN             EXP1_06_PIN
-  #define TOUCH_MOSI_PIN             EXP1_03_PIN
-  #define TOUCH_SCK_PIN              EXP1_05_PIN
-  #define TOUCH_CS_PIN               EXP1_04_PIN
-
-  #define BTN_EN1                    EXP2_03_PIN
-  #define BTN_EN2                    EXP2_05_PIN
-  #define BTN_ENC                    EXP1_02_PIN
-#endif
 
 //
 // NeoPixel LED
@@ -559,28 +353,4 @@
   #define BOARD_NEOPIXEL_PIN                PB10
 #endif
 
-#if ENABLED(WIFISUPPORT)
-  //
-  // WIFI
-  //
 
-  /**
-   *                      -------
-   *            GND | 9  |       | 8 | 3.3V
-   *  (ESP-CS) PB12 | 10 |       | 7 | PB15 (ESP-MOSI)
-   *           3.3V | 11 |       | 6 | PB14 (ESP-MISO)
-   * (ESP-IO0)  PD7 | 12 |       | 5 | PB13 (ESP-CLK)
-   * (ESP-IO4) PD10 | 13 |       | 4 | --
-   *             -- | 14 |       | 3 | PE15 (ESP-EN)
-   *  (ESP-RX)  PD8 | 15 |       | 2 | --
-   *  (ESP-TX)  PD9 | 16 |       | 1 | PE14 (ESP-RST)
-   *                      -------
-   *                       WIFI
-   */
-  #define ESP_WIFI_MODULE_COM                  3  // Must also set either SERIAL_PORT or SERIAL_PORT_2 to this
-  #define ESP_WIFI_MODULE_BAUDRATE      BAUDRATE  // Must use same BAUDRATE as SERIAL_PORT & SERIAL_PORT_2
-  #define ESP_WIFI_MODULE_RESET_PIN         PG7
-  #define ESP_WIFI_MODULE_ENABLE_PIN        PG8
-  #define ESP_WIFI_MODULE_GPIO0_PIN         PD7
-  #define ESP_WIFI_MODULE_GPIO4_PIN         PD10
-#endif

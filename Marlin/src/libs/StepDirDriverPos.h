@@ -1,6 +1,7 @@
 ﻿
 
 #define AXIS_NUM 8
+#define SERVO_NUM 2
 #define RING_BUF_NUM 400
 #include <Arduino.h>
 #include "../inc/MarlinConfig.h"
@@ -14,18 +15,11 @@
 class StepDirDriverPos {
 
   public:
-    /*StepDirDriverPoz(byte pinStep, byte pinDir, byte pinEn); // конструктор
-    void  control();  // управление, метод должен вызываться регулярно с максимальной частотой коммутации фаз
-	void  gotopoz(long int koord);
-	void  step(long int steps);  // инициирует поворот двигателя на заданное число шагов
-    void  setMode(byte stepMode, boolean fixStop);  // задает режимы коммутации фаз и остановки
-    void  setPoz(long int poz); 
-	void  setDivider(long int divider);  // установка делителя частоты для коммутации фаз
-   long  int readSteps();  // чтение оставшихся шагов
-	long int readPoz();  // чтение координаты*/
+
       long control_counter;
       StepDirDriverPos(int* pinStep, int* pinDir, int* pinEn, int* pinStop); // конструктор
       void  control();  // управление, метод должен вызываться регулярно с максимальной частотой коммутации фаз.
+      void  control_servo(byte num);  
       void  control(byte num); 
       void  ring_buf_control(); 
       void  home_axis(byte num);
@@ -121,15 +115,23 @@ class StepDirDriverPos {
     volatile float  _vel_prev[AXIS_NUM]{}; 
     volatile bool _homing_need[AXIS_NUM]{};
     
-    int debug_val = 0;
+    int debug_val = 1;
 
     volatile float  _acs[AXIS_NUM]{};  
     int  _pinStop [AXIS_NUM]{};
     volatile int _endstop_val [AXIS_NUM]{};
-      bool  end_inv [AXIS_NUM]{};
-      float steps_pr_mm [AXIS_NUM]{};
-      int home_dir_sdp[AXIS_NUM] {};
-      long home_pos[AXIS_NUM]{};
+    bool  end_inv [AXIS_NUM]{};
+    float steps_pr_mm [AXIS_NUM]{};
+    int home_dir_sdp[AXIS_NUM] {};
+    long home_pos[AXIS_NUM]{};
+
+    
+    volatile long servo_counter_20ms[SERVO_NUM]{};
+    volatile long servo_counter_work[SERVO_NUM]{};
+    volatile long servo_counter_20ms_max[SERVO_NUM]{};
+    volatile long servo_counter_work_max[SERVO_NUM]{};
+
+
   private:
     int _pinStep[AXIS_NUM]{};
     int  _pinDir[AXIS_NUM]{};
