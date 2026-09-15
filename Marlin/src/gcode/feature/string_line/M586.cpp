@@ -5,7 +5,7 @@
 #include "../../../module/string_periphery.h"
 
 void GcodeSuite::M586() {
-    #ifndef PRIMARY_PLATE
+
     if (parser.seen('I') && parser.seen('S'))  motors.step(parser.floatval('S'),parser.byteval('I')); 
     if (parser.seen('I') && parser.seen('P'))  motors.gotopos(parser.floatval('P'),parser.byteval('I')); 
     if (parser.seen('I') && parser.seen('M'))  motors.setVel(parser.floatval('M'),parser.byteval('I')); 
@@ -15,5 +15,5 @@ void GcodeSuite::M586() {
 
     if (parser.seen('F'))  { motors.sleep_all();}
     if (parser.seen('W'))  { motors.wake_up_all();}
-    #endif
+
 }

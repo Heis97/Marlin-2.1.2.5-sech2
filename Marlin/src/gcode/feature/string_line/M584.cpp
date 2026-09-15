@@ -6,7 +6,6 @@
 
 //STRING CONTROL
 void GcodeSuite::M584() {
-  #ifdef PRIMARY_PLATE
   //string sup--------------------------------------
   if (parser.seen('I'))
   {
@@ -80,7 +79,7 @@ void GcodeSuite::M584() {
     }
   }
   
-  #endif
+
   //-------------------------------------
 
 

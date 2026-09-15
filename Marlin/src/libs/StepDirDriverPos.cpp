@@ -21,12 +21,6 @@ volatile long servo_counter_20ms[SERVO_NUM]{0,0};
 volatile long servo_counter_20ms_max[SERVO_NUM]{2000,2000}; //20ms
     
 
-#ifdef PRIMARY_PLATE
-//dev 1    {-1,  -1,  -1,  1,  1,  1,  1,  1  };
-//dev 2 
-//
-
-//dev 10    {-1,  -1,  1,  1,  1,  1,  1,  1  };
 
 
 int _endstop_val[AXIS_NUM]{0,0,0,0,0,0,0,0 }; 
@@ -41,12 +35,7 @@ float steps_pr_mm[AXIS_NUM] { 80, 80, 80,80, 80, 80, 40, 80  };
 
 float steps_pr_mm_orig[AXIS_NUM] { 80, 80, 80,94, 94, 94, 47, 100  };
 float steps_pr_mm_k[AXIS_NUM] { 1, 1, 1, 1, 1, 1, 1, 1};
-#else
-int motor_dir[AXIS_NUM] {1,  1,  1,  -1,  -1,  -1,  -1,  1  };
-float steps_pr_mm_orig[AXIS_NUM] { 800, 800, 800,400, 400, 400, 200, 400 };
-float steps_pr_mm[AXIS_NUM] { 800, 800, 800,400, 400, 400, 200, 400 };
-float steps_pr_mm_k[AXIS_NUM] { 1, 1, 1, 1, 1, 1, 1, 1};
-#endif
+
 
 
 
@@ -54,7 +43,7 @@ volatile bool do_step[AXIS_NUM]{false,false,false,false,false,false,false,false}
 volatile bool _homing_need[AXIS_NUM]{false,false,false,false,false,false,false,false};     
 volatile bool _homed[AXIS_NUM]{false,false,false,false,false,false,false,false};     
 
-//#ifndef PRIMARY_PLATE
+
 
 volatile int _vibro[AXIS_NUM]{0,  0,  0,  1,  1,  1,  1,  1 }; 
 volatile int vibro_ampl[AXIS_NUM] {15,  15,  15,  10,  10,  10,  10,  10  };
@@ -93,18 +82,10 @@ StepDirDriverPos::StepDirDriverPos (int* pinStep, int* pinDir, int* pinEn, int* 
     do_step[i] = false;
     _homing_need[i] = false;
 
-    #ifndef PRIMARY_PLATE 
+
     setVelDest(2.1,i);
     setAcs(0.5f,i);
-    if(i>3)
-    {
-       setVelDest(2.1,i);
-       setAcs(0.5f,i);
-    }
-    #else
-    setVelDest(2.1,i);
-    setAcs(0.5f,i);
-    #endif   
+ 
     _vel_prev[i] = 0;
     vibro_ampl[i] = 15;    
   }
@@ -262,7 +243,7 @@ void  StepDirDriverPos::control() {
   //for (byte i=AXIS_NUM-1; i>0;i--){ control(i); }
 
   
-
+#ifdef KINEMATIK
   if(ring_buf_en && ring_buf_counter<ring_buf_end) ring_buf_control();
 
   if(!ring_buf_en && buf_work)
@@ -273,6 +254,7 @@ void  StepDirDriverPos::control() {
     _steps[2] = 0;
     _steps[7] = 0;
   }
+  #endif
   control_counter++;
 
   control(7);
@@ -291,14 +273,11 @@ void  StepDirDriverPos::control() {
 //------------------------------- запуск вращения
 // инициирует поворот двигателя на заданное число шагов
 void  StepDirDriverPos::step(long steps, byte num) { 
-  Serial.print(num);
-  Serial.print(" ");
-  Serial.println(steps);
 
   if(steps==0 ) {_steps[num]= 0; 
-    #ifndef PRIMARY_PLATE
+
     _vel[num] = 0;_vel_prev[num] = 0;
-    #endif
+
      return;}
   //Serial.println(steps);
   
@@ -421,7 +400,7 @@ void  StepDirDriverPos::setVelIntern(volatile float vel, byte num)
 {
   volatile float _vel_ch = vel;
   if(_vel_ch==0) _vel_ch = 0.01f;
-  double div = (100000.0f/vel);//FREQ_MOTORS
+  double div = (100000.0f/_vel_ch);//FREQ_MOTORS
    #ifdef DEBUG_STEP_DIR
   if(num==DEBUG_STEP_DIR_TARGET && count_handl == COUNT_HAND_END-1)
   {
@@ -592,56 +571,24 @@ void  StepDirDriverPos::vel_handler(byte _num)
     if(_steps[_num]== 0) {
        _vel[_num]= 0; 
        _vel_prev[_num]= 0; 
+       _time_ch_vel_prev[_num] = _time_ch_vel;
        return;
       }
     unsigned long  _dt_time_ch_vel = _time_ch_vel-_time_ch_vel_prev[_num];
 
+   
+    
+    _vel[_num]= _vel_prev[_num] +_acs[_num]*((volatile float)_dt_time_ch_vel)/1000;
+
+
     if(_vel[_num]>=_vel_dest[_num])
     {
-      
-      _vel[_num] = _vel_dest[_num];
-      //return;
+      _vel[_num]==_vel_dest[_num];
     }
-    else
-    {
-     
+
+ 
+      
     
-      _vel[_num]= _vel_prev[_num] +_acs[_num]*((volatile float)_dt_time_ch_vel)/1000;
-
-
-      if(_vel[_num]>=_vel_dest[_num])
-      {
-        _vel[_num]==_vel_dest[_num];
-      }
-
-      #ifdef DEBUG_STEP_DIR
-
-    if(_num==DEBUG_STEP_DIR_TARGET)// && count_handl==COUNT_HAND_END-1)
-    {
-      /*Serial.print( _time_ch_vel_prev[_num]);
-      Serial.print(" ");
-      Serial.print( _time_ch_vel);
-      Serial.print(" ");
-      Serial.print( _dt_time_ch_vel);
-      Serial.print(" ");
-      Serial.print(_acs[_num]*((float)_dt_time_ch_vel)/1000);
-      Serial.print(" ");
-      Serial.print(_vel_dest[_num]);
-      Serial.print(" ");
-      Serial.print(_vel_prev[_num]);
-      Serial.print(" ");
-      Serial.print(_vel[_num]);
-      Serial.print(" ");
-      Serial.print(_steps[_num]);
-      Serial.print(" ");
-      Serial.println(_divider[_num]);*/
-    }
-
-    #endif
-
-      
-      
-    }
     setVelIntern(_vel[_num],_num);
     
 }
@@ -650,7 +597,7 @@ void  StepDirDriverPos::vel_handler(byte _num)
 void  StepDirDriverPos::vel_handler()
 {
 _time_ch_vel = micros();
-#ifdef PRIMARY_PLATE
+#ifdef KINEMATIK
   vel_handler(3);
   vel_handler(4);
   vel_handler(5);
@@ -669,7 +616,6 @@ _time_ch_vel = micros();
 int counter_idle = 0;
 void StepDirDriverPos::idle()
 {
- // #ifndef PRIMARY_PLATE
 
  if(!ring_buf_en)
  {
@@ -678,9 +624,7 @@ void StepDirDriverPos::idle()
     {
       vel_handler();
       counter_idle=0;
-    }
-    //#endif
-    
+    }   
 
  }
  if(ring_buf_counter>=ring_buf_end) ring_buf_en = false;

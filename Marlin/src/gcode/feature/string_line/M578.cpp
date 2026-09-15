@@ -6,7 +6,6 @@
 //#include "../../../MarlinCore.h"
 
 void GcodeSuite::M578() {
-  #ifdef PRIMARY_PLATE
   if (parser.seen('S')) 
   {
     string_manager.set_press(parser.intval('S'));
@@ -32,6 +31,4 @@ void GcodeSuite::M578() {
     //string_manager.tare_tens();
   } 
 
-  
-  #endif
 }

@@ -42,6 +42,7 @@ class StepDirDriverPos {
       void  setVelIntern(volatile float vel, byte num);
       void setVelDest(volatile float vel, byte num);
       void  setAcs(float acs, byte num);
+      
       void  set_motor_dir(int dir, byte num);
       volatile long int* readSteps();
       volatile long int* readPos();
@@ -63,14 +64,13 @@ class StepDirDriverPos {
 
 //DEFAULT_AXIS_STEPS_PER_UNIT
 
-#ifndef PPRIMARY_PLATE
+
       volatile int _vibro[AXIS_NUM]{ }; 
       volatile int vibro_ampl[AXIS_NUM] { };
       volatile int vibro_counter[AXIS_NUM] {};
       volatile int cur_dir[AXIS_NUM] {};
       
-      #endif
-
+   
     volatile long ring_buf_x[RING_BUF_NUM]{ }; 
     volatile long ring_buf_y[RING_BUF_NUM]{ }; 
     volatile long ring_buf_z[RING_BUF_NUM]{ }; 

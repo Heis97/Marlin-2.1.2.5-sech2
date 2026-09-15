@@ -4,7 +4,6 @@
 #include "../../../module/string_periphery.h"
 
 void GcodeSuite::M579() {
-  #ifdef PRIMARY_PLATE
   if (parser.seen('S') && parser.seen('I')) 
   {
     string_manager.set_reley_i(parser.intval('S'),parser.intval('I'));
@@ -56,5 +55,5 @@ void GcodeSuite::M579() {
       float time_s = parser.floatval('L');
    //   string_manager.cycle_time = (int)((1000000*time_s) / (float)string_manager.period_manage_mcs);
   }
-  #endif
+
 }

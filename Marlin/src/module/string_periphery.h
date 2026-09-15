@@ -205,7 +205,7 @@ void move_one_axis(AxisEnum ax, float dist);
 void move_two_axis(AxisEnum ax1, float dist1,AxisEnum ax2, float dist2);
 
 String state_cur();
-String state_cur_sup();
+
 
 void string_ethernet_begin_3();
 void string_ethernet_loop_3();
@@ -363,67 +363,7 @@ bool taring_process[TENSOMETR_NUM] = {false,false,false,false,false};
 bool taring_process_all = false;
 
 
-#ifndef PRIMARY_PLATE
-//----------D micro----------------------
 
-
-void set_led_micro_d(uint8_t v);
-void set_led_micro_e(uint8_t v);
-
-volatile float microsc_vel = 5.1f;
-
-
-AxisEnum mirror_axis_d = J_AXIS;
-AxisEnum camera_axis_d = I_AXIS;
-float mirror_coord_d = 0.0;
-float camera_coord_d = 0.0;
-
-float mirror_h_off_d = 0.0;
-float camera_h_off_d = 0.0;
-float camera_v_off_d = 0.0;
-int homed_d = 0;
-
-
-float mirror_cur_d = 0;
-float camera_cur_d = 0;
-float offset_mirror_d = 3;//10 maket // 3
-//float pos_mirror_d[3] = {1,2,3};
-//float pos_camera_d[3] = {1,2,3};
-
-float pos_mirror_d[5] = {2,7,15,22,30};
-float pos_camera_d[5] = {-5,2,8,16,23};
-
-float limit_camera_d = 50;
-float limit_mirror_d = 50;
-
-int led_micr_d = 0;
-
-//----------E micro----------------------
-AxisEnum mirror_axis_e = U_AXIS;
-AxisEnum camera_axis_e = K_AXIS;
-float mirror_coord_e = 0.0;
-float camera_coord_e = 0.0;
-
-float mirror_h_off_e = 0.0;
-float camera_h_off_e = 0.0;
-float camera_v_off_e = 0.0;
-int  homed_e = 0;
-
-
-float mirror_cur_e = 0;
-float camera_cur_e = 0;
-float offset_mirror_e = 3;//10
-//float pos_mirror_e[3] = {1,2,3};
-//float pos_camera_e[3] = {1,2,3};
-
-float pos_mirror_e[5] = {2,7,15,22,30};
-float pos_camera_e[5] = {-5,2,8,16,23};
-
-float limit_camera_e = 50;
-float limit_mirror_e = 50;
-
-int led_micr_e = 0;
-#endif
 
 private:
 

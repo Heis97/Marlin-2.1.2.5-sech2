@@ -91,11 +91,14 @@
   #define MOTHERBOARD BOARD_BTT_OCTOPUS_PRO_V1_0
 #endif
 
+#define NUM_BOARD 2
+
+//#define KINEMATIK
 //---------------------------------
 
 //#define MAKET
 
-#define PRIMARY_PLATE
+
 
 #define STRING_WARNING_TIME 600 //seconds
 //---------------------------------
@@ -111,19 +114,6 @@
 #define USB_SERIAL_SPEED 250000 
 
 
-/*
-#ifdef PRIMARY_PLATE
- #define SERIAL_PORT -1
-#define BAUDRATE USB_SERIAL_SPEED
-#define SERIAL_PORT_2 2
-#define BAUDRATE_2 PLATE_SERIAL_SPEED     
-#else
- #define SERIAL_PORT 2  
-#define BAUDRATE PLATE_SERIAL_SPEED
-#define SERIAL_PORT_2 3
-#define BAUDRATE_2 250000   
-#endif
-*/
 
 #define SERIAL_PORT -1
 #define BAUDRATE USB_SERIAL_SPEED
@@ -1206,12 +1196,7 @@
  *                                      X, Y, Z [, I [, J [, K...]]], E0 [, E1[, E2...]]
  */
 
-#ifdef PRIMARY_PLATE
- 
  #define DEFAULT_AXIS_STEPS_PER_UNIT   { 800, 160, 240,240, 240, 240, 240, 100 }
- #else
- #define DEFAULT_AXIS_STEPS_PER_UNIT   { 100, 100, 100,200, 200, 800, 800, 800 }
- #endif
 
 
 //#define DEFAULT_AXIS_STEPS_PER_UNIT   { 100, 100, 100,100, 100, 100, 100, 100 }
@@ -1234,11 +1219,8 @@
  * Override with M201
  *                                      X, Y, Z [, I [, J [, K...]]], E0 [, E1[, E2...]]
  */
-#ifdef PRIMARY_PLATE
-  #define DEFAULT_MAX_ACCELERATION      { 100000, 100000,  100000,100000,100000,10000,  100000,  100000 }
- #else
- #define DEFAULT_MAX_ACCELERATION      { 100000, 100000,  100000,100,100,100,  100,  1000 }
- #endif
+
+ #define DEFAULT_MAX_ACCELERATION      { 100, 100,  100,100,100,100,  100,  100 }
 //#define LIMITED_MAX_ACCEL_EDITING     // Limit edit via M201 or LCD to DEFAULT_MAX_ACCELERATION * 2
 #if ENABLED(LIMITED_MAX_ACCEL_EDITING)
   #define MAX_ACCEL_EDIT_VALUES       { 6000, 6000, 200, 20000 } // ...or, set your own edit limits
@@ -1691,7 +1673,6 @@
 // @section motion
 
 // Invert the stepper direction. Change (or reverse the motor connector) if an axis goes the wrong way.
-#ifdef PRIMARY_PLATE
 #define INVERT_X_DIR false
 #define INVERT_Y_DIR true
 #define INVERT_Z_DIR true
@@ -1701,19 +1682,7 @@
 //#define INVERT_U_DIR false
 //#define INVERT_V_DIR falses
 #define INVERT_U_DIR true
-#else
-#define INVERT_X_DIR false
-#define INVERT_Y_DIR false
-#define INVERT_Z_DIR false
-#define INVERT_I_DIR true
-#define INVERT_J_DIR true
-#define INVERT_K_DIR false
-//#define INVERT_U_DIR false
-//#define INVERT_V_DIR falses
-#define INVERT_U_DIR true
 
-
-#endif
 // @section extruder
 
 // For direct drive extruder v9 set to true, for geared extruder set to false.

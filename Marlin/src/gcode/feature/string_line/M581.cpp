@@ -5,7 +5,6 @@
 
 
 void GcodeSuite::M581() {
-      #ifndef PRIMARY_PLATE
   if (parser.seen('X')) 
   {
        // string_manager.k_m_x = parser.intval('X');
@@ -52,6 +51,5 @@ void GcodeSuite::M581() {
 
   } 
 
-  #endif
 
 }

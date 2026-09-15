@@ -25,11 +25,12 @@ StringPeriphery  string_manager;
 byte mac[] = {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED};
 
 
-#ifdef PRIMARY_PLATE
+#if NUM_BOARD == 1
 IPAddress ip(192,168,10,212);//IPAddress ip(192,168,10,212);
 unsigned int localPort = 52000; 
 uint16_t remote_port = 50000;
-#else
+
+#elif NUM_BOARD == 2
 IPAddress ip(192,168,10,211);
 unsigned int localPort = 52100; 
 uint16_t remote_port = 50001;
@@ -161,7 +162,7 @@ int vel_count_2 = 0;
 
 void StringPeriphery::string_spi_loop()
 {
-    #ifdef PRIMARY_PLATE
+
     WRITE(SPI_SOFT2_CS, LOW);  
     DELAY_US(300);
     char c;
@@ -239,7 +240,7 @@ void StringPeriphery::string_spi_loop()
     //long dstr_test = len_one_test-string_len_com_test;
     //string_len_com_test = len_one_test;
     //cur_speed_enc[0] = (float)( (double)cur_speed_enc[0] -0.01* ((double)cur_speed_enc[0]- (double)(dstr_test*1000000)/(double)dtime));
-    #endif
+ 
 };
 
 long string_lenght_dest_one = 0;
@@ -577,14 +578,9 @@ void StringPeriphery::string_tcp_ethernet_loop_2()
    //Serial.print("IP: ");
    //Serial.println(Ethernet.localIP());
     //server.println();
-    #ifdef PRIMARY_PLATE
 
    server.write(state_cur().c_str());
 
-   //server.write(rcvbuf);
-   #else
-   server.write(state_cur_sup().c_str());
-   #endif
 
    if (client) 
    { 
@@ -643,11 +639,11 @@ void StringPeriphery::string_ethernet_loop_3() {
         if( Udp.read(rcvbuf_udp,sizeof(rcvbuf_udp))>0)
         {
             
-            /*for(int i=0; i< UDP_PACKET_LEN - 1;i++)
+            for(int i=0; i< UDP_PACKET_LEN - 1;i++)
             {
                 Serial.print(rcvbuf_udp[i]);
             }
-            Serial.println("");*/
+            Serial.println("");
             
             {
                 long new_com_num = parser.parse_s(rcvbuf_udp);
@@ -664,19 +660,13 @@ void StringPeriphery::string_ethernet_loop_3() {
         }
     }
 
-    #ifdef PRIMARY_PLATE
+
     Udp.beginPacket(remote,remote_port);
     Udp.write(state_cur().c_str());
 
     //Serial.println(state_cur().c_str());
     Udp.endPacket();
-    #else
-    //Udp.beginPacket(Udp.remoteIP(), Udp.remotePort());
-    Udp.beginPacket(remote, remote_port);
-    Udp.write(state_cur_sup().c_str());
-    Udp.endPacket();
 
-    #endif
     
   
 }
@@ -820,11 +810,9 @@ bool phase_test = true;
 int test_loop_len = 10;
 int count_vibro_wr = 0;
 
-#ifdef PRIMARY_PLATE
+
 bool bunk_vibro = 0;
-#else
-bool bunk_vibro = 1;
-#endif
+
 unsigned long bunk_vibro_time_relax = 4000;
 unsigned long bunk_vibro_time_work =  1000;
 
@@ -862,8 +850,7 @@ void StringPeriphery::idle()
     }
 
     if(dt_temp>period_manage_mcs  )
-    {
-        
+    {        
         uint16_t temp_raw = max_test1.readRaw();
         thermalManager.temp_hotend[0].setraw(temp_raw);
         float chamber_temp_cur = max_test1.temperature();
@@ -1178,43 +1165,24 @@ void StringPeriphery::set_press(uint16_t v)
 {
     pressure_dest = v;
     mcp4725_press.setValue(v);
-    #ifdef PRIMARY_PLATE
-    if(v>0)
-    {
-        set_pfled(PFLED_PNEVMO,true);
-       // WRITE(PRESS_PIN,1);
-    }
-    else
-    {
-        set_pfled(PFLED_PNEVMO,false);
-        //WRITE(PRESS_PIN,0);
-    }
-#endif
+
 };
 
 void StringPeriphery::set_turbo(uint16_t v)
 {
- #ifndef PRIMARY_PLATE
-mcp4725_turbo.setValue(v);
- #endif
+
+
+
 turbo_val_cur = v;
 if(v>20)
 {
-    
-    #ifndef PRIMARY_PLATE
+
     WRITE(TURBO_PIN,1);
-    #else
-    set_pfled(PFLED_TURBO,true);
-    #endif
 }
 else
 {
     
-    #ifndef PRIMARY_PLATE
-    WRITE(TURBO_PIN,0);
-    #else
-    set_pfled(PFLED_TURBO,false);
-    #endif
+
 }
 //Serial.println(turbo_val_cur);
 
@@ -1347,7 +1315,7 @@ String StringPeriphery::state_cur()
     
     motors.debug_val  = READ(motors._pinStop[3]);
     int homing_delta_done =(int)(motors._homing_need[0]||motors._homing_need[1]||motors._homing_need[2]);
-    state = "st1 "+
+    state = "st"+String(NUM_BOARD)+" "+
     String(cur_line_num)+delim+            //0          //1
     String(motors.ring_buf_counter)+delim+//1           //2
     String(cur_send)+delim;               //2           //3  cur_send
@@ -1360,9 +1328,9 @@ String StringPeriphery::state_cur()
         String(motors.ring_buf_en)+delim+//5           //6
         String(homing_delta_done)+delim+//6            //7
         String((int)thermalManager.temp_hotend[0].celsius)+delim+                           //7            //8
-        "0 "+                           //8            //9
-        "0 "+                           //9            //10
-        "0 ";                           //10            //11
+        "0"+delim+                           //8            //9
+        "0"+delim+                           //9            //10
+        "0"+delim;                           //10            //11
     }
     else if(cur_send==1)
     {
@@ -1403,91 +1371,31 @@ String StringPeriphery::state_cur()
     {
         state += 
         String((int)thermalManager.temp_hotend[0].target)+delim+//3
-        String(motors._endstop_val[1])+delim+//4
-        String(motors._endstop_val[2])+delim+//5
-        String(motors._endstop_val[3])+delim+//6
-        String(motors._endstop_val[4])+delim+//7
-        String(motors._endstop_val[5])+delim+//8
+        String(motors._divider[3])+delim+//4
+        String(motors._dividerCount[3])+delim+//5
+        String((int)(motors._acs[3]*100))+delim+//6
+        String((int)(motors._vel_dest[3]*100))+delim+//7
+        String((int)(motors._vel[3]*100))+delim+//8
         String(motors._endstop_val[6])+delim+//9
         String(motors._endstop_val[7])+delim;//10
 
         
     }
 
-    cur_send++;
-    
+    #ifndef KINEMATIK
 
-    return state;
-};
-
-
-String StringPeriphery::state_cur_sup()
-{
-    String state = "";
-    #ifndef PRIMARY_PLATE
-    String delim = " ";
-
-if (cur_send==4){cur_send = 0;};
-    if(cur_send==0)
-    {
-        state = "st2 "+
-        String(cur_line_num)+ delim+//0
-        String(cur_send)+ delim+//1
-        String( turbo_val_cur)+delim+//2  turbo_val_cur   motors.vibro_ampl[E0_AXIS] = 30;  vibro_vel_valve = 12;
-        String(time_measure)+delim+//3  time_measure
-        String(gateway_move)+delim+//4
-        String(feed_pound_move)+delim+//5
-        String(recuperator_move)+delim;//6  
-    }
-    else if(cur_send==1)
-    {
-        state = "st2 "+
-        String(cur_line_num)+ delim+//0
-        String(cur_send)+ delim+//1
-        String(vibro_main)+delim+//2
-        String(vibro_loop_high)+delim+//3
-        String(vibro_loop_ampl)+delim+//4 
-        String(homed_d)+delim+//5  homed_d
-        String(homed_e)+delim;//6  homed_e               
-    }
-    else if(cur_send==2)
-    {
-        state = "st2 "+
-        String(cur_line_num)+ delim+//0
-        String(cur_send)+ delim+//1
-        String(mirror_h_off_d)+delim+//2 mirror_h_off_d
-        String(camera_h_off_d)+delim+//3 camera_h_off_d
-        String(mirror_h_off_e)+delim+//4 mirror_h_off_e
-        String(camera_h_off_e)+delim+//5 camera_h_off_e
-        String(led_micr_d)+delim;//6
-    }
-    else if(cur_send==3)
-    {
-        state = "st2 "+
-        String(cur_line_num)+ delim+//0
-        String(cur_send)+ delim+//1
-        String(led_micr_e)+" 0 0 0 0";//2
-    }
-    
-    cur_send++;
-    
-    //Serial.println(state);
+    state +=  "0"+delim+                           //8            //9
+        "0"+delim+                           //9            //10
+        "0"+delim;                           //10            //11
     #endif
-    return state;
+    cur_send++;
     
+
+    return state;
 };
-#ifndef PRIMARY_PLATE
-void StringPeriphery::set_led_micro_d(uint8_t v)
-{
-     WRITE(LED_MC1_PIN,v);
-     led_micr_d = v;
-};
-void StringPeriphery::set_led_micro_e(uint8_t v)
-{
-     WRITE(LED_MC2_PIN,v);
-     led_micr_e = v;
-};
-#endif
+
+
+
 void StringPeriphery::report_state()
 {
     Serial.println(state_cur());
@@ -1800,79 +1708,7 @@ void StringPeriphery::set_reporting(bool state){
 };
 
 
-void StringPeriphery::manage_motion()
-{
-   
-    #ifdef PRIMARY_PLATE
 
-        if(karet_move == 1   ) 
-        {             
-           if(motors._vibro[karet_axis]==0) manage_axis((AxisEnum) karet_axis,dir[karet_axis]);             
-        } else {  if(!motors.readHoming_one(karet_axis)) motors.step(0L,karet_axis);  };
-        
-        if(!taring_process_all)
-        {
-            if(string_move == 1) 
-            { 
-                string_direction = 1;
-                manage_axis((AxisEnum) motor_com_axis,string_move*dir[motor_com_axis]); 
-            } 
-            else if(string_move == 2)
-            {
-                string_direction = -1;
-                manage_axis((AxisEnum) motor_com_axis, -string_move*dir[motor_com_axis]); 
-            }
-            else 
-            { 
-                motors.step(0L,motor_com_axis);    
-            };
-            
-            for(int i=0; i< TENSOMETR_NUM; i++)
-            {
-                    if(string_move_second[i] == 1) 
-                    {
-                        manage_axis((AxisEnum)motors_tens[i] ,string_move_second[i]*dir[motors_tens[i]]);   
-                    } 
-                    else if(string_move_second[i] == 2)
-                    {
-                        manage_axis((AxisEnum)motors_tens[i] , -string_move_second[i]*dir[motors_tens[i]]);   
-                    }
-                    else 
-                    { 
-                        motors.step(0L,motors_tens[i]);    
-                    };
-            }
-
-
-        }
-        
-    #else
-
-        //if(feed_pound_move == 1) { manage_axis((AxisEnum) feed_pound_axis,dir[feed_pound_axis]);     } else { motors.step(0L,feed_pound_axis);     };
-        if(gateway_move == 1) 
-        { 
-            if(motors._vibro[gateway_axis]==0)  manage_axis((AxisEnum) gateway_axis,dir[gateway_axis]);
-        }
-        else{ motors.step(0L,gateway_axis); };
-
-        if(feed_pound_move == 1)            
-        {
-            if(motors._vibro[feed_pound_axis]==0)   manage_axis((AxisEnum) feed_pound_axis,dir[feed_pound_axis]);
-        }
-        else { motors.step(0L,feed_pound_axis); };  
-
-        if(recuperator_move == 1) 
-        { 
-           if(motors._vibro[recuperator_axis]==0)  manage_axis((AxisEnum) recuperator_axis,dir[recuperator_axis]);     
-        } 
-        else { motors.step(0L,recuperator_axis);  };
-
-       // if(feed_pound_move == 1) {  k[feed_pound_axis] = manage_axis_vibro_simple((AxisEnum) feed_pound_axis,dir[feed_pound_axis], vibr[feed_pound_axis],k[feed_pound_axis],k_m[feed_pound_axis] );  } else { motors.step(0L,feed_pound_axis);   };
-        //if(gateway_move == 1)    {  k[gateway_axis]    = manage_axis_vibro_simple((AxisEnum) gateway_axis,   dir[gateway_axis],    vibr[gateway_axis],   k[gateway_axis],   k_m[gateway_axis]    );  } else { motors.step(0L,gateway_axis);   };
-
-    #endif
-    //}
-};
 
 int StringPeriphery::manage_axis_vibro(AxisEnum Axis,  int vibr, int k, int k_m,int dir,int _vibr_a){
     int sign = 1;
@@ -1955,139 +1791,5 @@ void StringPeriphery::comp_speeds_string()
 }
 
 
-
-#ifndef PRIMARY_PLATE
-
-
-void StringPeriphery::move_one_axis(AxisEnum ax, float dist)
-{
-    motors.gotopos(dist,ax);
-};
-void StringPeriphery::move_two_axis(AxisEnum ax1, float dist1,AxisEnum ax2, float dist2)
-{
-    motors.gotopos(dist1,ax1);
-    motors.gotopos(dist2,ax2);
-};
-//--------------D micro----------------
-void StringPeriphery::move_depth_d(float dist)
-{
-    camera_v_off_d = dist;
-    float cam_x = camera_coord_d + camera_v_off_d  + camera_h_off_d;
-    apply_limits_d(cam_x,mirror_cur_d);
-    move_one_axis(camera_axis_d,  camera_cur_d  );
-};
-void StringPeriphery::move_betw_string_d(float dist)
-{
-    camera_h_off_d = dist;
-    mirror_h_off_d = dist;
-    float cam_x = camera_coord_d + camera_v_off_d + camera_h_off_d;
-    float mir_x = mirror_coord_d + mirror_h_off_d;
-    apply_limits_d(cam_x, mir_x);
-    move_two_axis(camera_axis_d,camera_cur_d,mirror_axis_d, mirror_cur_d);
-};
-void StringPeriphery::move_to_pos_d(int num)
-{
-    camera_coord_d = pos_camera_d[num];
-    mirror_coord_d = pos_mirror_d[num];
-    apply_limits_d(camera_coord_d, mirror_coord_d) ;
-    move_two_axis(camera_axis_d,camera_cur_d,mirror_axis_d, mirror_cur_d);
-};
-void StringPeriphery::apply_limits_d(float _cam_coord_in,float _mir_coord_in)
-{
-    float _camera_coord = _cam_coord_in;
-    float _mirror_coord = _mir_coord_in;
-    if (!homed_d)
-    {
-        return;
-    };
-    if (_mirror_coord < 0) _mirror_coord = 0;
-    if (_camera_coord < 0) _camera_coord = 0;
-
-    if (_mirror_coord > limit_mirror_d) _mirror_coord = limit_mirror_d;
-    if (_camera_coord > limit_camera_d) _camera_coord = limit_camera_d;
-
-    if (_mirror_coord + offset_mirror_d < _camera_coord) _camera_coord =_mirror_coord + offset_mirror_d;
-
-    mirror_cur_d = _mirror_coord;
-    camera_cur_d = _camera_coord;
-
-};
-void StringPeriphery::home_d(uint8_t v)
-{
-    if(v==1)
-    {
-        motors.home_axis(camera_axis_d);
-        motors.home_axis(mirror_axis_d);
-    }
-    else
-    {
-
-    }
-    
-    homed_d = v;
-};
-
-
-//--------------E micro----------------
-
-
-void StringPeriphery::move_depth_e(float dist)
-{
-    camera_v_off_e = dist;
-    float cam_x = camera_coord_e + camera_v_off_e  + camera_h_off_e;
-    apply_limits_e(cam_x,mirror_cur_e);
-    move_one_axis(camera_axis_e,  camera_cur_e  );
-};
-void StringPeriphery::move_betw_string_e(float dist)
-{
-    camera_h_off_e = dist;
-    mirror_h_off_e = dist;
-    float cam_x = camera_coord_e + camera_v_off_e + camera_h_off_e;
-    float mir_x = mirror_coord_e + mirror_h_off_e;
-    apply_limits_e(cam_x, mir_x);
-    move_two_axis(camera_axis_e,camera_cur_e,mirror_axis_e, mirror_cur_e);
-};
-void StringPeriphery::move_to_pos_e(int num)
-{
-    camera_coord_e = pos_camera_e[num];
-    mirror_coord_e = pos_mirror_e[num];
-    apply_limits_e(camera_coord_e, mirror_coord_e) ;
-    move_two_axis(camera_axis_e,camera_cur_e,mirror_axis_e, mirror_cur_e);
-};
-void StringPeriphery::apply_limits_e(float _cam_coord_in,float _mir_coord_in)
-{
-    float _camera_coord = _cam_coord_in;
-    float _mirror_coord = _mir_coord_in;
-    if (!homed_e)
-    {
-        return;
-    };
-    if (_mirror_coord < 0) _mirror_coord = 0;
-    if (_camera_coord < 0) _camera_coord = 0;
-
-    if (_mirror_coord > limit_mirror_e) _mirror_coord = limit_mirror_e;
-    if (_camera_coord > limit_camera_e) _camera_coord = limit_camera_e;
-
-    if (_mirror_coord + offset_mirror_e < _camera_coord) _camera_coord =_mirror_coord + offset_mirror_e;
-
-    mirror_cur_e = _mirror_coord;
-    camera_cur_e = _camera_coord;
-
-};
-void StringPeriphery::home_e(uint8_t v)
-{
-    if(v==1)
-    {
-        motors.home_axis(camera_axis_e);
-        motors.home_axis(mirror_axis_e);
-    }
-    else
-    {
-        
-    }
-    
-    homed_e = v;
-};
-#endif
 
 
