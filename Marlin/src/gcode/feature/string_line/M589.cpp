@@ -9,8 +9,14 @@ void GcodeSuite::M589() {
     {
         motors.home_delta(parser.floatval('X'));
     }
+    
     if (parser.seen('Y')) 
     {
         motors.home_delta_calibr(parser.floatval('Y'));
+    }
+
+    if (parser.seen('Z') && parser.seen('E')) 
+    {
+        motors.move_delta_z(parser.floatval('Z'), parser.intval('E'));
     }
 }

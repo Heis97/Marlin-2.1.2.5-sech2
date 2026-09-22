@@ -86,11 +86,16 @@ void StringPeriphery::init()
     pinMode(RELAY_4_PIN,OUTPUT);
     pinMode(RELAY_5_PIN,OUTPUT);
 
-    set_24v_out(0);
+    WRITE(RELAY_0_PIN,0);
+    WRITE(RELAY_1_PIN,0);
+    WRITE(RELAY_2_PIN,0);
+    WRITE(RELAY_3_PIN,0);
+
+    /*set_24v_out(0);
     set_24v_reset(0);
     set_reley_1(0);
     set_reley_2(0);
-    set_reley_HV(0);
+    set_reley_HV(0);*/
 
     
 
@@ -852,11 +857,13 @@ void StringPeriphery::idle()
     if(dt_temp>period_manage_mcs  )
     {        
         uint16_t temp_raw = max_test1.readRaw();
-        thermalManager.temp_hotend[0].setraw(temp_raw);
-        float chamber_temp_cur = max_test1.temperature();
-        thermalManager.temp_hotend[0].celsius = (float)chamber_temp_cur;
-        temp_val_ext = temp_val_ext - 0.007*(temp_val_ext-chamber_temp_cur);   
+        //thermalManager.temp_hotend[0].setraw(temp_raw);
 
+        float chamber_temp_cur = max_test1.temperature();
+        //Serial.println(chamber_temp_cur);
+       
+        temp_val_ext = temp_val_ext - 0.013*(temp_val_ext-chamber_temp_cur);   
+        thermalManager.temp_hotend[0].celsius = temp_val_ext;
         time_measure_temp = cur_time_mc;
     }
 
@@ -1290,6 +1297,7 @@ void StringPeriphery::set_24v_reset(int v)
 }
 
 
+
 bool release_process_done[TENSOMETR_NUM] = {false,false,false,false,false};
 bool pull_process_done[TENSOMETR_NUM] = {false,false,false,false,false};
 uint8_t release_counter[5] = {0,0,0,0,0};
@@ -1371,12 +1379,12 @@ String StringPeriphery::state_cur()
     {
         state += 
         String((int)thermalManager.temp_hotend[0].target)+delim+//3
-        String(motors._divider[3])+delim+//4
-        String(motors._dividerCount[3])+delim+//5
-        String((int)(motors._acs[3]*100))+delim+//6
-        String((int)(motors._vel_dest[3]*100))+delim+//7
-        String((int)(motors._vel[3]*100))+delim+//8
-        String(motors._endstop_val[6])+delim+//9
+        String(motors._divider[7])+delim+//4
+        String(motors._dividerCount[7])+delim+//5
+        String((int)(motors._acs[7]*100))+delim+//6
+        String((int)(motors._vel_dest[7]*100))+delim+//7
+        String((int)(motors._vel[7]*100))+delim+//8
+        String(thermalManager.getHeaterPower((heater_id_t)0))+delim+//9
         String(motors._endstop_val[7])+delim;//10
 
         

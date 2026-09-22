@@ -27,4 +27,10 @@ void GcodeSuite::M587() {
     if (parser.seen('I') && parser.seen('K')) { motors.home_dir_sdp[parser.byteval('I')] = parser.intval('K');}    
     if (parser.seen('I') && parser.seen('B')) { motors.home_pos[parser.byteval('I')] = parser.longval('B');}
 
+    if (parser.seen('I') && parser.seen('C')) { motors._pos[parser.byteval('I')] = parser.longval('C');}
+    if (parser.seen('I') && parser.seen('Q')) {        
+        if(parser.intval('Q')== -1) motors.sleep(parser.byteval('I'));  
+        if(parser.intval('Q')== 1) motors.wake_up(parser.byteval('I'));     
+    }
+
 }

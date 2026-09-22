@@ -41,7 +41,9 @@ class StepDirDriverPos {
       void  setDiv(float div, byte num);
       void  setVelIntern(volatile float vel, byte num);
       void setVelDest(volatile float vel, byte num);
+      void setVelDest_direct(volatile float vel, byte num);
       void  setAcs(float acs, byte num);
+      void move_delta_z(float vel,int en);
       
       void  set_motor_dir(int dir, byte num);
       volatile long int* readSteps();
