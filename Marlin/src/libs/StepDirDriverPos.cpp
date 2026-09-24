@@ -435,7 +435,7 @@ void  StepDirDriverPos::setVelIntern(volatile float vel, byte num)
 {
   volatile float _vel_ch = vel;
   if(_vel_ch==0) return;
-  double div = (100000.0f/_vel_ch);//FREQ_MOTORS
+  double div = (104616.18f/_vel_ch);//FREQ_MOTORS
    #ifdef DEBUG_STEP_DIR
   if(num==DEBUG_STEP_DIR_TARGET && count_handl == COUNT_HAND_END-1)
   {
