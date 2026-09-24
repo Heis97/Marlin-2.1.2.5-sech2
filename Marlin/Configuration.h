@@ -91,9 +91,9 @@
   #define MOTHERBOARD BOARD_BTT_OCTOPUS_PRO_V1_0
 #endif
 
-#define NUM_BOARD 2
+#define NUM_BOARD 1
 
-//#define KINEMATIK
+#define KINEMATIK
 //---------------------------------
 
 //#define MAKET

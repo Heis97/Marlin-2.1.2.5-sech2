@@ -110,7 +110,7 @@ void MAX31865::begin(max31865_numwires_t wires, const_float_t zero_res, const_fl
   wireRes = wire_res;
 
   pinMode(cselPin, OUTPUT);
-  digitalWrite(cselPin, HIGH);
+  WRITE(cselPin, HIGH);
 
 
   softSpiInit(); // Define pin modes for Software SPI
@@ -168,7 +168,7 @@ uint8_t MAX31865::readFault() {
 }
 void MAX31865::begin() 
 {
-  return begin(MAX31865_2WIRE,100.0f,430.0f,1.0f);
+  return begin(MAX31865_2WIRE,1000.0f,4300.0f,1.0f);
 }
 /**
  * Clear last fault
@@ -256,13 +256,18 @@ void MAX31865::initFixedFlags(max31865_numwires_t wires) {
 
 inline uint16_t MAX31865::readRawImmediate() {
   uint16_t rtd = readRegister16(MAX31865_RTDMSB_REG);
-  DEBUG_ECHOLNPGM("MAX31865 RTD MSB:", (rtd >> 8), " LSB:", (rtd & 0x00FF));
+   Serial.println("MAX31865 RTD MSB:");
+   Serial.println((rtd >> 8));
+   Serial.println(" LSB:");
+   Serial.println( (rtd & 0x00FF));
 
   if (rtd & 1) {
     lastFault = readRegister8(MAX31865_FAULTSTAT_REG);
     lastRead |= 1;
     clearFault(); // also clears the bias voltage flag, so no further action is required
-    DEBUG_ECHOLNPGM("MAX31865 read fault: ", lastFault);
+    Serial.println("MAX31865 read fault: ");
+    Serial.println(lastFault);
+
   }
   else {
     TERN_(MAX31865_USE_READ_ERROR_DETECTION, const millis_t ms = millis());
@@ -270,7 +275,8 @@ inline uint16_t MAX31865::readRawImmediate() {
       // If 2 readings within 1s differ too much (~20°C) it's a read error.
       lastFault = 0x01;
       lastRead |= 1;
-      DEBUG_ECHOLNPGM("MAX31865 read error: ", rtd);
+      Serial.println("MAX31865 read error: ");
+      Serial.println(rtd);
     }
     else {
       lastRead = rtd;
@@ -293,7 +299,7 @@ uint16_t MAX31865::readRaw() {
     const millis_t ms = millis();
 
     if (PENDING(ms, nextEventStamp)) {
-      DEBUG_ECHOLNPGM("MAX31865 waiting for event ", nextEvent);
+      Serial.println("MAX31865 waiting for event ");
       return lastRead;
     }
 
@@ -302,14 +308,14 @@ uint16_t MAX31865::readRaw() {
         enableBias();
         nextEventStamp = ms + 2; // wait at least 10.5*τ (τ = 100nF*430Ω max for PT100 / 10nF*4.3ΚΩ for PT1000 = 43μsec) + 1msec
         nextEvent = SETUP_1_SHOT_MODE;
-        DEBUG_ECHOLNPGM("MAX31865 bias voltage enabled");
+        Serial.println("MAX31865 bias voltage enabled");
         break;
 
       case SETUP_1_SHOT_MODE:
         oneShot();
         nextEventStamp = ms + TERN(MAX31865_50HZ_FILTER, 63, 52); // wait at least 52msec for 60Hz (63msec for 50Hz) before reading RTD register
         nextEvent = READ_RTD_REG;
-        DEBUG_ECHOLNPGM("MAX31865 1 shot mode enabled");
+        Serial.println("MAX31865 1 shot mode enabled");
         break;
 
       case READ_RTD_REG:
@@ -489,26 +495,26 @@ void MAX31865::writeRegister8(uint8_t addr, uint8_t data) {
 }
 
 void MAX31865::spiBeginTransaction() {
-  digitalWrite(sclkPin, LOW); // ensure CPOL0
+  WRITE(sclkPin, LOW); // ensure CPOL0
   DELAY_NS_VAR(MAX31865_SPI_TIMING_TCWH); // ensure minimum time of CS inactivity after previous operation
-  digitalWrite(cselPin, LOW);
+  WRITE(cselPin, LOW);
   DELAY_NS_VAR(MAX31865_SPI_TIMING_TCC);
 
  // if (sclkPin == TERN(LARGE_PINMAP, -1UL, 255))
   //  SPI.beginTransaction(spiConfig);
  // else
-    digitalWrite(sclkPin, HIGH);
+   WRITE(sclkPin, HIGH);
 }
 
 void MAX31865::spiEndTransaction() {
  // if (sclkPin == TERN(LARGE_PINMAP, -1UL, 255))
    // SPI.endTransaction();
   //else
-    digitalWrite(sclkPin, LOW);
+    WRITE(sclkPin, LOW);
 
   DELAY_NS_VAR(MAX31865_SPI_TIMING_TCCH);
 
-  digitalWrite(cselPin, HIGH);
+  WRITE(cselPin, HIGH);
 }
 
 /**
@@ -526,14 +532,14 @@ uint8_t MAX31865::spiTransfer(uint8_t x) {
 
   uint8_t reply = 0;
   for (int i = 7; i >= 0; i--) {
-    digitalWrite(mosiPin, x & _BV(i));
+    WRITE(mosiPin, x & _BV(i));
     DELAY_NS_VAR(MAX31865_SPI_TIMING_TDC);
-    digitalWrite(sclkPin, LOW);
+    WRITE(sclkPin, LOW);
     DELAY_NS_VAR(MAX31865_SPI_TIMING_TCL - MAX31865_SPI_TIMING_TDC);
     reply <<= 1;
-    if (digitalRead(misoPin)) reply |= 1;
+    if (READ(misoPin)) reply |= 1;
     DELAY_NS_VAR(MAX31865_SPI_TIMING_TDC);
-    digitalWrite(sclkPin, HIGH);
+    WRITE(sclkPin, HIGH);
     DELAY_NS_VAR(MAX31865_SPI_TIMING_TCL - MAX31865_SPI_TIMING_TDC);
   }
   return reply;
@@ -541,7 +547,7 @@ uint8_t MAX31865::spiTransfer(uint8_t x) {
 
 void MAX31865::softSpiInit() {
   pinMode(sclkPin, OUTPUT);
-  digitalWrite(sclkPin, LOW);
+  WRITE(sclkPin, LOW);
   pinMode(mosiPin, OUTPUT);
   pinMode(misoPin, INPUT);
 }

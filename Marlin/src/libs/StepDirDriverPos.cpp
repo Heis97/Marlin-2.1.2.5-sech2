@@ -102,7 +102,7 @@ StepDirDriverPos::StepDirDriverPos (int* pinStep, int* pinDir, int* pinEn, int* 
   }
 }
 
-
+long counter_steps = 0;
 //------------------------------- управление коммутацией фаз
 // метод должен вызываться регулярно с максимальной частотой коммутации фаз
 void  StepDirDriverPos::control(byte num) {
@@ -115,6 +115,12 @@ void  StepDirDriverPos::control(byte num) {
   WRITE(_pinStep[num], LOW);
     do_step[num] = false; 
     //Serial.println("do_step false");
+    if(num==0)
+    {
+
+      //debug_count  = -1;
+    }
+    
   };
   // делитель частоты коммутации
   if ( _steps[num] == 0 ) return;
@@ -133,13 +139,30 @@ void  StepDirDriverPos::control(byte num) {
     {
       _dividerCount_sub[num] = 0;
     }
+
+
+    /*if(_dividerCount_sub[num] > _divider_sub[num])
+    {
+      _dividerCount[num]= 1;
+    };
+    _dividerCount_sub[num]++;
+    if(_dividerCount_sub[num]==100)
+    {
+      _dividerCount_sub[num] = 0;
+    }*/
   };
 
   if ( _steps[num] != 0 ) {
     //Serial.println("do_step true");
     //debug_count  = ring_buf_cur_count;
     WRITE(_pinStep[num], HIGH); 
-    do_step[num] = true;     
+    do_step[num] = true;    
+    
+    if(num==0)
+    {
+     // debug_count  = 1;
+
+    }
   }   
 
   if (_steps[num] > 0) 
@@ -242,6 +265,9 @@ void  StepDirDriverPos::control_servo(byte num)
   }
 } 
 
+long debug_prev_pos;
+long debug_prev_count;
+
 void  StepDirDriverPos::control() {
   //for (byte i=AXIS_NUM-1; i>0;i--){ control(i); }
 
@@ -272,38 +298,44 @@ void  StepDirDriverPos::control() {
   control_servo(0);
   control_servo(1);
   
+
+  if( control_counter%10000 ==0)
+  {
+    debug_count =(long)( 1000000.0f/(float)(_pos[0]-debug_prev_pos));
+
+      debug_prev_pos = _pos[0];
+      debug_prev_count = control_counter;
+  }
 }
 //------------------------------- запуск вращения
 // инициирует поворот двигателя на заданное число шагов
 void  StepDirDriverPos::step(long steps, byte num) { 
 
-  if(steps==0 ) {_steps[num]= 0; 
-
-    _vel[num] = 0;_vel_prev[num] = 0;
-
-     return;}
-  //Serial.println(steps);
+  if(steps==0 ) 
+  {
+    _steps[num]= 0; 
+    _vel[num] = 0;
+    _vel_prev[num] = 0;
+    return;
+  }
   
   if(num==7) WRITE(_pinEn[num], LOW);
   if ( SIGN(steps)*motor_dir[num] < 0 )//*motor_dir[num]
    {
     WRITE(_pinDir[num], LOW);
     cur_dir[num] = 0;
-    //Serial.println("dir low");
   }
   else 
   {
     WRITE(_pinDir[num], HIGH);
     cur_dir[num] = 1;
-  //Serial.println("dir high");
   }
   _steps[num]= (volatile long)steps;
 }
 
 void  StepDirDriverPos::step(float dist, byte num) {
 
-  long d = dist_to_steps(dist,num);
-  
+  long d = dist_to_steps(dist,num);  
   step(d,num); 
 }
 
@@ -463,12 +495,10 @@ void  StepDirDriverPos::move_delta_z(float vel, int en)
         step(0l,Z_AXIS);
         return;
     }
-    /*_vel[X_AXIS]=0;
-    _vel[Y_AXIS]=0;
-    _vel[Z_AXIS]=0;
-    setVelDest_direct(vel,X_AXIS);
-    setVelDest_direct(vel,Y_AXIS);
-    setVelDest_direct(vel,Z_AXIS);*/
+
+    setVelDest(vel,X_AXIS);
+    setVelDest(vel,Y_AXIS);
+    setVelDest(vel,Z_AXIS);
 
     if(en>0)
     {
@@ -645,30 +675,31 @@ void  StepDirDriverPos::vel_handler(byte _num)
 
 void  StepDirDriverPos::vel_handler()
 {
-_time_ch_vel = micros();
+  _time_ch_vel = micros();
 
-if(ring_buf_en)
-{
-  vel_handler(3);
-  vel_handler(4);
-  vel_handler(5);
-  vel_handler(6);
-}
-else
-{
-    vel_handler(0);
-    vel_handler(1);
-    vel_handler(2);
+  if(ring_buf_en)
+  {
     vel_handler(3);
     vel_handler(4);
     vel_handler(5);
     vel_handler(6);
-    vel_handler(7);
-}
+  }
+  else
+  {
+      vel_handler(0);
+      vel_handler(1);
+      vel_handler(2);
+      vel_handler(3);
+      vel_handler(4);
+      vel_handler(5);
+      vel_handler(6);
+      vel_handler(7);
+  }
 }
 int counter_idle = 0;
 long counter_rest_e = 0;
 long counter_rest_e_max = 10000;
+bool e_en = false;
 void StepDirDriverPos::idle()
 {
 
@@ -689,14 +720,16 @@ void StepDirDriverPos::idle()
   if(_steps[E_AXIS]==0)
   {
     counter_rest_e++;
-    if(counter_rest_e>counter_rest_e_max )
+    if(counter_rest_e>counter_rest_e_max &&e_en )
     {
         WRITE(_pinEn[E_AXIS],1);
+        e_en = false;
     }
     
   }
   else
   {
+    e_en = true;
     counter_rest_e = 0;
   }
   #endif

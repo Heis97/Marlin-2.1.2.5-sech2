@@ -9,12 +9,7 @@
 #define SPI_PACKET_LEN 56
 
 #define ETHERNET_PERIOD_MCS 1000  //8
-/*
-#define TEMP_0_CS_PIN                     PF8   // Max31865 CS
-  #define TEMP_0_SCK_PIN                    PA5
-  #define TEMP_0_MISO_PIN                   PA6
-  #define TEMP_0_MOSI_PIN                   PA7
-*/
+
 StringPeriphery  string_manager;
 
 #define SPI_TIME_ASK 110//ms
@@ -644,11 +639,11 @@ void StringPeriphery::string_ethernet_loop_3() {
         if( Udp.read(rcvbuf_udp,sizeof(rcvbuf_udp))>0)
         {
             
-            for(int i=0; i< UDP_PACKET_LEN - 1;i++)
+            /*for(int i=0; i< UDP_PACKET_LEN - 1;i++)
             {
                 Serial.print(rcvbuf_udp[i]);
             }
-            Serial.println("");
+            Serial.println("");*/
             
             {
                 long new_com_num = parser.parse_s(rcvbuf_udp);
@@ -693,20 +688,20 @@ void StringPeriphery::set_vel_gateway(float v){};
 void StringPeriphery::set_turbine(float v){};
 float StringPeriphery::get_temp_cam_ext()
 {
-    float val = max6675_temp_cam_ext.getTemperature();
+   // float val = max6675_temp_cam_ext.getTemperature();
     //Serial.println(val);
     return 0;
 };
 
 float StringPeriphery::get_temp_cam_intern1()
 {
-    float val = max6675_temp_cam_intern_1.getTemperature();
+   // float val = max6675_temp_cam_intern_1.getTemperature();
     return 0;
 };
 
 float StringPeriphery::get_temp_cam_intern2()
 {
-    float val = max6675_temp_cam_intern_2.getTemperature();
+    //float val = max6675_temp_cam_intern_2.getTemperature();
 
     return 0;
 };
@@ -856,7 +851,7 @@ void StringPeriphery::idle()
 
     if(dt_temp>period_manage_mcs  )
     {        
-        uint16_t temp_raw = max_test1.readRaw();
+        //uint16_t temp_raw = max_test1.readRaw();
         //thermalManager.temp_hotend[0].setraw(temp_raw);
 
         float chamber_temp_cur = max_test1.temperature();
@@ -1335,7 +1330,7 @@ String StringPeriphery::state_cur()
         String((int)motors.delta_calibr)+delim+//4     //5
         String(motors.ring_buf_en)+delim+//5           //6
         String(homing_delta_done)+delim+//6            //7
-        String((int)thermalManager.temp_hotend[0].celsius)+delim+                           //7            //8
+        String((int)temp_val_ext)+delim+                           //7            //8
         "0"+delim+                           //8            //9
         "0"+delim+                           //9            //10
         "0"+delim;                           //10            //11
@@ -1378,12 +1373,12 @@ String StringPeriphery::state_cur()
     else if(cur_send==3)
     {
         state += 
-        String((int)thermalManager.temp_hotend[0].target)+delim+//3
-        String(motors._divider[7])+delim+//4
-        String(motors._dividerCount[7])+delim+//5
-        String((int)(motors._acs[7]*100))+delim+//6
-        String((int)(motors._vel_dest[7]*100))+delim+//7
-        String((int)(motors._vel[7]*100))+delim+//8
+        String(motors.debug_count)+delim+//(int)thermalManager.temp_hotend[0].target)+delim+//3
+        String(motors._divider[0])+delim+//4
+        String(motors._dividerCount[0])+delim+//5
+        String(motors._divider_sub[0])+delim+//6
+        String(motors._dividerCount_sub[0])+delim+//7
+        String(motors._steps[0])+delim+//8
         String(thermalManager.getHeaterPower((heater_id_t)0))+delim+//9
         String(motors._endstop_val[7])+delim;//10
 
