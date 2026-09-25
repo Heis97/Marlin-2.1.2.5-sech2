@@ -86,6 +86,7 @@ class StepDirDriverPos {
     volatile long ring_buf_lookup = 200;
     volatile long ring_buf_end = 0;
     volatile long ring_buf_cur_count = 0;
+    volatile long ring_buf_cur_line = 0;
 
     volatile bool delta_calibr = false;
 

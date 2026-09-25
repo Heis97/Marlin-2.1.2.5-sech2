@@ -17,18 +17,20 @@ StringPeriphery  string_manager;
 #define RST_W5500 PD7
 #define SPI_SS  PB12
 #define VALVE_VEL 5.0f
-byte mac[] = {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED};
+
 
 
 #if NUM_BOARD == 1
 IPAddress ip(192,168,10,212);//IPAddress ip(192,168,10,212);
 unsigned int localPort = 52000; 
 uint16_t remote_port = 50000;
+byte mac[] = {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0x01};
 
 #elif NUM_BOARD == 2
 IPAddress ip(192,168,10,211);
 unsigned int localPort = 52100; 
 uint16_t remote_port = 50001;
+byte mac[] = {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0x02};
 #endif
 
 
@@ -1326,6 +1328,8 @@ String StringPeriphery::state_cur()
     if(cur_send==0)
     {
         state += 
+
+
         String(motors.control_counter)+delim+//3       //4
         String((int)motors.delta_calibr)+delim+//4     //5
         String(motors.ring_buf_en)+delim+//5           //6
@@ -1373,8 +1377,8 @@ String StringPeriphery::state_cur()
     else if(cur_send==3)
     {
         state += 
-        String(motors.debug_count)+delim+//(int)thermalManager.temp_hotend[0].target)+delim+//3
-        String(motors._divider[0])+delim+//4
+        String(motors.ring_buf_cur_count)+delim+//(int)thermalManager.temp_hotend[0].target)+delim+//3
+        String(motors.ring_buf_cur_line)+delim+//4
         String(motors._dividerCount[0])+delim+//5
         String(motors._divider_sub[0])+delim+//6
         String(motors._dividerCount_sub[0])+delim+//7

@@ -182,54 +182,63 @@ void  StepDirDriverPos::ring_buf_control()
 {
   buf_work = true;
   int ring_buf_cur = ring_buf_counter%RING_BUF_NUM;//current command all and in ring
-  
-  if(ring_buf_cur_count>=ring_buf_time[ring_buf_cur] - prev_count )
+  ring_buf_cur_line = ring_buf_time[ring_buf_cur];
+  if(ring_buf_cur_count>=ring_buf_time[ring_buf_cur] )
   {
-    prev_count = ring_buf_time[ring_buf_cur];
+
     ring_buf_cur_count = 0;
     //when next command
-       
+        
     gotopos(ring_buf_x[ring_buf_cur], X_AXIS );
     gotopos(ring_buf_y[ring_buf_cur], Y_AXIS );
     gotopos(ring_buf_z[ring_buf_cur], Z_AXIS );
-    gotopos(ring_buf_e[ring_buf_cur], E_AXIS );
+    step(ring_buf_e[ring_buf_cur], E_AXIS );
 
-  
-    long abs_time = ring_buf_time[ring_buf_cur];
-    long cur_time = abs_time-prev_time;
-    prev_time = abs_time;
 
+    long cur_time = ring_buf_time[ring_buf_cur];
+//---------------------------------------------------------------
     long abs_x = ring_buf_x[ring_buf_cur];
     long cur_x = abs_x - prev_x;
     prev_x = abs_x;
-
-    if(cur_x==0) cur_x = 1;
-    setDiv(abs((float)cur_time/(float)cur_x ), X_AXIS);
-    _dividerCount[X_AXIS] = _divider[X_AXIS];
+    //debug_count = cur_x;
+    if(cur_x!=0) 
+    {
+      setDiv(abs((float)cur_time/(float)cur_x ), X_AXIS);
+      //_dividerCount[X_AXIS] = _divider[X_AXIS];
+    }
+    
 
     long abs_y = ring_buf_y[ring_buf_cur];
     long cur_y = abs_y - prev_y;
     prev_y = abs_y;
 
-    if(cur_y==0) cur_y = 1;
-    setDiv(abs((float)cur_time/(float)cur_y) , Y_AXIS);
-    _dividerCount[Y_AXIS] = _divider[Y_AXIS];
+    if(cur_y!=0) 
+    {
+      setDiv(abs((float)cur_time/(float)cur_y) , Y_AXIS);
+      //_dividerCount[Y_AXIS] = _divider[Y_AXIS];
+    }
+    
 //---------------------------------------------------------------
     long abs_z = ring_buf_z[ring_buf_cur];
     long cur_z = abs_z - prev_z;
     prev_z = abs_z;
 
-    if(cur_z==0) cur_z = 1;
-    setDiv(abs((float)cur_time/(float)cur_z) , Z_AXIS);
-    _dividerCount[Z_AXIS] = _divider[Z_AXIS];
+    if(cur_z!=0) 
+    {
+      setDiv(abs((float)cur_time/(float)cur_z) , Z_AXIS);
+      //_dividerCount[Z_AXIS] = _divider[Z_AXIS];
+    }
+    
 //---------------------------------------------------------------
-    long abs_e = ring_buf_e[ring_buf_cur];
-    long cur_e = abs_e - prev_e;
-    prev_e = abs_e;
 
-    if(cur_e==0) cur_e = 1;
-    setDiv(abs((float)cur_time/(float)cur_e) , E_AXIS);
-    _dividerCount[E_AXIS] = _divider[E_AXIS];
+    long cur_e = ring_buf_e[ring_buf_cur];
+
+    if(cur_e!=0) 
+    {
+      setDiv(abs((float)cur_time/(float)cur_e) , E_AXIS);
+     // _dividerCount[E_AXIS] = _divider[E_AXIS];
+    }
+    
 
 
 
@@ -427,7 +436,7 @@ void StepDirDriverPos::setDiv(volatile float div, byte num)
 
   fractionalPart = modf(double(div), &integerPart);
 
-  _divider[num] = (long)integerPart;
+  _divider[num] = (long)integerPart+1;
   _divider_sub[num] = (int)(fractionalPart*100);
 }
 
