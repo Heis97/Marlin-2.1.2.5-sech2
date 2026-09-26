@@ -173,13 +173,21 @@ void  StepDirDriverPos::control(byte num) {
 }
 long prev_count = 0;
 long prev_time = 0;
-float prev_x = 0;
-float prev_y = 0;
-float prev_z = 0;
-float prev_e = 0;
+long prev_x = 0;
+long prev_y = 0;
+long prev_z = 0;
+long prev_e = 0;
 bool buf_work = false;
+
+
+int counter_idle = 0;
+long counter_rest_e = 0;
+long counter_rest_e_max = 10000;
+bool e_en = false;
+
 void  StepDirDriverPos::ring_buf_control() 
 {
+  counter_rest_e=0;
   buf_work = true;
   int ring_buf_cur = ring_buf_counter%RING_BUF_NUM;//current command all and in ring
   ring_buf_cur_line = ring_buf_time[ring_buf_cur];
@@ -188,11 +196,11 @@ void  StepDirDriverPos::ring_buf_control()
 
     ring_buf_cur_count = 0;
     //when next command
-        
+  
     gotopos(ring_buf_x[ring_buf_cur], X_AXIS );
     gotopos(ring_buf_y[ring_buf_cur], Y_AXIS );
     gotopos(ring_buf_z[ring_buf_cur], Z_AXIS );
-    step(ring_buf_e[ring_buf_cur], E_AXIS );
+    gotopos(ring_buf_e[ring_buf_cur], E_AXIS );
 
 
     long cur_time = ring_buf_time[ring_buf_cur];
@@ -230,9 +238,9 @@ void  StepDirDriverPos::ring_buf_control()
     }
     
 //---------------------------------------------------------------
-
-    long cur_e = ring_buf_e[ring_buf_cur];
-
+    long abs_e = ring_buf_e[ring_buf_cur];
+    long cur_e = abs_e - prev_e;
+    prev_e = abs_e;
     if(cur_e!=0) 
     {
       setDiv(abs((float)cur_time/(float)cur_e) , E_AXIS);
@@ -241,7 +249,7 @@ void  StepDirDriverPos::ring_buf_control()
     
 
 
-
+    
     //-------------------
     ring_buf_counter++;
 
@@ -282,7 +290,21 @@ void  StepDirDriverPos::control() {
 
   
 #ifdef KINEMATIK
-  if(ring_buf_en && ring_buf_counter<ring_buf_end) ring_buf_control();
+  if(ring_buf_en)
+  {
+  if(ring_buf_counter<ring_buf_end && ring_buf_counter<ring_buf_all_counter_write)
+    {
+      ring_buf_control();
+      _programm_done = 0;
+    }
+    else
+    {
+      
+    }
+  }
+  
+  
+  
 
   if(!ring_buf_en && buf_work)
   {
@@ -291,6 +313,12 @@ void  StepDirDriverPos::control() {
     _steps[1] = 0;
     _steps[2] = 0;
     _steps[7] = 0;
+    if(ring_buf_counter==ring_buf_end)
+    {
+      _programm_done = 1;
+      
+    }
+    
   }
   #endif
   control_counter++;
@@ -581,7 +609,7 @@ long int StepDirDriverPos::dist_to_steps(float dist, byte num)
 void StepDirDriverPos::home_axis(byte num)
 {
   _homing_need[num] = true;
-  step(home_dir_sdp[num] * 100000L,num);
+  step(home_dir_sdp[num] * 10000000L,num);
 }
 
 void StepDirDriverPos::home_delta(float div_vel)
@@ -605,9 +633,9 @@ void StepDirDriverPos::home_delta_calibr(float div_vel)
     step(0L,X_AXIS);
     step(0L,Y_AXIS);
     step(0L,Z_AXIS);
-    step(-home_dir_sdp[X_AXIS]*100000L,X_AXIS);
-    step(-home_dir_sdp[Y_AXIS]*100000L,Y_AXIS);
-    step(-home_dir_sdp[Z_AXIS]*100000L,Z_AXIS);
+    step(-home_dir_sdp[X_AXIS]*10000000L,X_AXIS);
+    step(-home_dir_sdp[Y_AXIS]*10000000L,Y_AXIS);
+    step(-home_dir_sdp[Z_AXIS]*10000000L,Z_AXIS);
 }
 void StepDirDriverPos::home_handler(byte _num)
 {
@@ -705,10 +733,7 @@ void  StepDirDriverPos::vel_handler()
       vel_handler(7);
   }
 }
-int counter_idle = 0;
-long counter_rest_e = 0;
-long counter_rest_e_max = 10000;
-bool e_en = false;
+
 void StepDirDriverPos::idle()
 {
 

@@ -1334,8 +1334,8 @@ String StringPeriphery::state_cur()
         String((int)motors.delta_calibr)+delim+//4     //5
         String(motors.ring_buf_en)+delim+//5           //6
         String(homing_delta_done)+delim+//6            //7
-        String((int)temp_val_ext)+delim+                           //7            //8
-        "0"+delim+                           //8            //9
+        String((int)temp_val_ext)+delim+       //7            //8
+        String(motors._programm_done)+delim+      //8            //9
         "0"+delim+                           //9            //10
         "0"+delim;                           //10            //11
     }
@@ -1377,9 +1377,23 @@ String StringPeriphery::state_cur()
     else if(cur_send==3)
     {
         state += 
+        String(motors._steps[0])+delim+//3
+        String(motors._steps[1])+delim+//4
+        String(motors._steps[2])+delim+//5
+        String(motors._steps[3])+delim+//6
+        String(motors._steps[4])+delim+//7
+        String(motors._steps[5])+delim+//8
+        String(motors._steps[6])+delim+//9
+        String(motors._steps[7])+delim;//10
+
+        
+    }
+    else if(cur_send==4)
+    {
+        state += 
         String(motors.ring_buf_cur_count)+delim+//(int)thermalManager.temp_hotend[0].target)+delim+//3
         String(motors.ring_buf_cur_line)+delim+//4
-        String(motors._dividerCount[0])+delim+//5
+        String(motors.ring_buf_counter)+delim+//5
         String(motors._divider_sub[0])+delim+//6
         String(motors._dividerCount_sub[0])+delim+//7
         String(motors._steps[0])+delim+//8

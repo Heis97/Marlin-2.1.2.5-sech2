@@ -97,7 +97,7 @@ class StepDirDriverPos {
     volatile unsigned long ring_buf_all_counter_write_max = 0;
 
     volatile bool ring_buf_en = false;
-    volatile bool ring_buf_go = false;
+
 
     volatile long _steps[AXIS_NUM]{};// оставшееся число шагов 
     volatile long _pos[AXIS_NUM]{}; 
@@ -111,6 +111,9 @@ class StepDirDriverPos {
     unsigned long  _time_ch_vel_prev[AXIS_NUM]{}; 
 
     
+    volatile  int  _programm_done = 0;
+
+
     volatile  long  _divider[AXIS_NUM]{};  
     volatile  int  _divider_sub[AXIS_NUM]{}; 
     volatile float  _vel[AXIS_NUM]{};  
