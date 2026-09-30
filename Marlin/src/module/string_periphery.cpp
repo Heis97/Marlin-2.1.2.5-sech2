@@ -1336,7 +1336,7 @@ String StringPeriphery::state_cur()
         String(homing_delta_done)+delim+//6            //7
         String((int)temp_val_ext)+delim+       //7            //8
         String(motors._programm_done)+delim+      //8            //9
-        "0"+delim+                           //9            //10
+        String(motors.delta_tcp_serach_x)+String(motors.delta_tcp_serach_y)+String(motors.delta_tcp_serach_z)+delim+                           //9            //10
         "0"+delim;                           //10            //11
     }
     else if(cur_send==1)

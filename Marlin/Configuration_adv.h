@@ -2852,7 +2852,7 @@
   #if AXIS_IS_TMC_CONFIG(U)
     #define U_CURRENT      800
     #define U_CURRENT_HOME U_CURRENT
-    #define U_MICROSTEPS     8
+    #define U_MICROSTEPS     16
     #define U_RSENSE         0.11
     #define U_CHAIN_POS     -1
     //#define U_INTERPOLATE  true

@@ -306,13 +306,13 @@ void  StepDirDriverPos::control() {
   
   
 
-  if(!ring_buf_en && buf_work)
+  if(!ring_buf_en && buf_work && _steps[0] == 0 && _steps[1] == 0 && _steps[2] == 0 && _steps[7] == 0)
   {
     buf_work = false;
-    _steps[0] = 0;
+   /* _steps[0] = 0;
     _steps[1] = 0;
     _steps[2] = 0;
-    _steps[7] = 0;
+    _steps[7] = 0;*/
     if(ring_buf_counter==ring_buf_end)
     {
       _programm_done = 1;
@@ -639,23 +639,76 @@ void StepDirDriverPos::home_delta_calibr(float div_vel)
 }
 void StepDirDriverPos::home_handler(byte _num)
 {
-
-  if(_num==0)
+  if(delta_calibr )
   {
-    int end_val = READ(pin_stop_delta_calibr);
-   
-    if(delta_calibr )
+    if(_num==0)
     {
-      if(end_val ==0)
-      {
-        step(0L,X_AXIS);
-        step(0L,Y_AXIS);
-        step(0L,Z_AXIS);
-        delta_calibr = false;
-      }
+      int end_val = READ(pin_stop_delta_calibr);
+      
+        if(end_val ==0)
+        {
+          step(0L,X_AXIS);
+          step(0L,Y_AXIS);
+          step(0L,Z_AXIS);
+          delta_calibr = false;
+        }
+      
     }
   }
-  
+
+  if(delta_tcp_serach_x == 1)
+  {
+    if(_num==0)
+    {
+      int end_val = READ(LASER_END1_PIN);
+      
+        if(end_val ==0)
+        {
+          step(0L,X_AXIS);
+          step(0L,Y_AXIS);
+          step(0L,Z_AXIS);
+          delta_tcp_serach_x = 0;
+          ring_buf_en = false;
+        }
+      
+    }
+  }
+  if(delta_tcp_serach_y == 1)
+  {
+    if(_num==0)
+    {
+      int end_val = READ(LASER_END2_PIN);
+      
+        if(end_val ==0)
+        {
+          step(0L,X_AXIS);
+          step(0L,Y_AXIS);
+          step(0L,Z_AXIS);
+          delta_tcp_serach_y = 0;
+          ring_buf_en = false;
+        }
+      
+    }
+  }
+
+  if(delta_tcp_serach_z == 1)
+  {
+    if(_num==0)
+    {
+      int end_val = READ(LASER_END2_PIN);
+      
+        if(end_val ==0)
+        {
+          step(0L,X_AXIS);
+          step(0L,Y_AXIS);
+          step(0L,Z_AXIS);
+          delta_tcp_serach_z = 0;
+          ring_buf_en = false;
+        }
+      
+    }
+  }
+
   _endstop_val[_num] = READ(_pinStop[_num]);  
   if(end_inv[_num]>0)
   {

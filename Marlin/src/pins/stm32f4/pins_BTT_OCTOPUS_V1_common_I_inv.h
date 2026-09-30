@@ -39,9 +39,22 @@
 #define I2C_SCL_PIN                       PB8
 #define I2C_SDA_PIN                       PB9
 
+#if NUM_BOARD == 2
+#define SERVO_C1_PIN                       PB6
+#define SERVO_C2_PIN                       PB7
+#else
 #define SERVO_C1_PIN                       PA9
 #define SERVO_C2_PIN                       PA10
+#endif
 
+
+#if NUM_BOARD == 2
+#define LASER_END1_PIN                       -1
+#define LASER_END2_PIN                       -1
+#else
+#define LASER_END1_PIN                       PB6
+#define LASER_END2_PIN                       PB7
+#endif
 
 //#define I2C_SCL_PIN                       PA9
 //#define I2C_SDA_PIN                       PA10
@@ -51,7 +64,7 @@
 //
 // Servos
 //
-#define SERVO0_PIN                          PB6
+#define SERVO0_PIN                          -1
 
 //
 // Trinamic Stallguard pins
@@ -144,7 +157,7 @@
 // Z Probe (when not Z_MIN_PIN)
 //
 #ifndef Z_MIN_PROBE_PIN
-  #define Z_MIN_PROBE_PIN                   PB7
+  #define Z_MIN_PROBE_PIN                   -1
 #endif
 /*#define I_STOP_PIN                  I_DIAG_PIN  
 #define J_STOP_PIN                  J_DIAG_PIN

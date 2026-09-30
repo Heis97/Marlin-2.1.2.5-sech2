@@ -90,6 +90,10 @@ class StepDirDriverPos {
 
     volatile bool delta_calibr = false;
 
+    volatile int delta_tcp_serach_x = 0;
+    volatile int delta_tcp_serach_y = 0;
+    volatile int delta_tcp_serach_z = 0;
+
     volatile long debug_count = 0;
 
     volatile unsigned long ring_buf_all_counter = 0;

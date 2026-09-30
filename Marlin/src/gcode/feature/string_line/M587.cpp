@@ -8,6 +8,7 @@ void GcodeSuite::M587() {
 
     if (parser.seen('I') && parser.seen('R')) { motors.steps_pr_mm[parser.byteval('I')] = parser.floatval('R');}
     if (parser.seen('I') && parser.seen('S')) { motors.step(parser.floatval('S'),parser.byteval('I')); }
+    if (parser.seen('I') && parser.seen('S') && parser.seen('L')) { motors.step(parser.longval('S'),parser.byteval('I')); }
     if (parser.seen('I') && parser.seen('P')) { motors.gotopos(parser.floatval('P'),parser.byteval('I')); }//motors.setVel(0,parser.byteval('I'));  
     if (parser.seen('I') && parser.seen('P') && parser.seen('L')) { motors.gotopos(parser.longval('P'),parser.byteval('I')); }
     if (parser.seen('I') && parser.seen('M')) { motors.setVel(parser.floatval('M'),parser.byteval('I')); }
