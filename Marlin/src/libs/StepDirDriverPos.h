@@ -63,9 +63,12 @@ class StepDirDriverPos {
       void sleep_all();
       void sleep_string(byte motors_tens[5]);
 
+      void  tool_recognise();
+
 
 //DEFAULT_AXIS_STEPS_PER_UNIT
-
+      int _laser_end_val[2]{ }; 
+      volatile int _tool_recognise_val[8]{ }; 
 
       volatile int _vibro[AXIS_NUM]{ }; 
       volatile int vibro_ampl[AXIS_NUM] { };
@@ -146,7 +149,7 @@ class StepDirDriverPos {
     int _pinStep[AXIS_NUM]{};
     int  _pinDir[AXIS_NUM]{};
     int  _pinEn [AXIS_NUM]{};
-    
+    int _tool_recognise_pin[8] {};
 
       
       //long int koord[AXIS_NUM]{};     

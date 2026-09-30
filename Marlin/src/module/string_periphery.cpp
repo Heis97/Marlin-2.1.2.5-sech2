@@ -83,10 +83,16 @@ void StringPeriphery::init()
     pinMode(RELAY_4_PIN,OUTPUT);
     pinMode(RELAY_5_PIN,OUTPUT);
 
+    pinMode(FAN2_PIN,OUTPUT);
+    pinMode(FAN1_PIN,OUTPUT);
+
     WRITE(RELAY_0_PIN,0);
     WRITE(RELAY_1_PIN,0);
     WRITE(RELAY_2_PIN,0);
     WRITE(RELAY_3_PIN,0);
+
+    WRITE(FAN2_PIN,1);
+    WRITE(FAN1_PIN,1);
 
     /*set_24v_out(0);
     set_24v_reset(0);
@@ -1316,7 +1322,7 @@ String StringPeriphery::state_cur()
     
 
     String state = "";
-    if (cur_send>=4){cur_send = 0;};
+    if (cur_send>=5){cur_send = 0;};
     
     motors.debug_val  = READ(motors._pinStop[3]);
     int homing_delta_done =(int)(motors._homing_need[0]||motors._homing_need[1]||motors._homing_need[2]);
@@ -1390,17 +1396,25 @@ String StringPeriphery::state_cur()
     }
     else if(cur_send==4)
     {
-        state += 
+        /*state += 
         String(motors.ring_buf_cur_count)+delim+//(int)thermalManager.temp_hotend[0].target)+delim+//3
         String(motors.ring_buf_cur_line)+delim+//4
         String(motors.ring_buf_counter)+delim+//5
-        String(motors._divider_sub[0])+delim+//6
-        String(motors._dividerCount_sub[0])+delim+//7
+        String(motors._laser_end_val[0])+delim+//6
+        String(motors._laser_end_val[1])+delim+//7
         String(motors._steps[0])+delim+//8
         String(thermalManager.getHeaterPower((heater_id_t)0))+delim+//9
-        String(motors._endstop_val[7])+delim;//10
+        String(motors._endstop_val[7])+delim;//10*/
 
-        
+        state += 
+        String(motors._tool_recognise_val[0])+delim+//3
+        String(motors._tool_recognise_val[1])+delim+//4
+        String(motors._tool_recognise_val[2])+delim+//5
+        String(motors._tool_recognise_val[3])+delim+//6
+        String(motors._tool_recognise_val[4])+delim+//7
+        String(motors._tool_recognise_val[5])+delim+//8
+        String(motors._tool_recognise_val[6])+delim+//9
+        String(motors._tool_recognise_val[7])+delim;//10
     }
 
     #ifndef KINEMATIK

@@ -15,6 +15,8 @@ int stop_pins[AXIS_NUM] {X_DIAG_PIN,  Y_DIAG_PIN,  Z_DIAG_PIN,  I_DIAG_PIN,  J_D
 
 int servo_pins[SERVO_NUM]{SERVO_C1_PIN ,SERVO_C2_PIN };
 
+int _tool_recognise_pin[8] {TOOL0_RECOGNISE0_PIN,  TOOL0_RECOGNISE1_PIN, TOOL0_RECOGNISE2_PIN, TOOL1_RECOGNISE0_PIN,  TOOL1_RECOGNISE1_PIN, TOOL1_RECOGNISE2_PIN,  TOOL2_RECOGNISE0_PIN,  TOOL3_RECOGNISE0_PIN };
+
 volatile long servo_counter_work[SERVO_NUM]{0,0};
 volatile long servo_counter_work_max[SERVO_NUM]{120,120};
 volatile long servo_counter_20ms[SERVO_NUM]{0,0};
@@ -100,6 +102,14 @@ StepDirDriverPos::StepDirDriverPos (int* pinStep, int* pinDir, int* pinEn, int* 
     servo_counter_20ms_max[i] = 2000;
     servo_counter_work_max[i] = 120;
   }
+
+  SET_INPUT(LASER_END1_PIN); 
+  SET_INPUT(LASER_END2_PIN); 
+
+  for (byte i=0; i<8;i++)
+{ 
+  SET_INPUT(_tool_recognise_pin[i]);
+}
 }
 
 long counter_steps = 0;
@@ -656,35 +666,37 @@ void StepDirDriverPos::home_handler(byte _num)
     }
   }
 
+      //_laser_end_val[0] = READ(LASER_END1_PIN);;
   if(delta_tcp_serach_x == 1)
   {
     if(_num==0)
     {
       int end_val = READ(LASER_END1_PIN);
-      
-        if(end_val ==0)
+      _laser_end_val[0] = end_val;
+        if(end_val ==1)
         {
           step(0L,X_AXIS);
           step(0L,Y_AXIS);
           step(0L,Z_AXIS);
-          delta_tcp_serach_x = 0;
+          delta_tcp_serach_x = 2;
           ring_buf_en = false;
         }
       
     }
   }
+  //_laser_end_val[1]= READ(LASER_END2_PIN);
   if(delta_tcp_serach_y == 1)
   {
     if(_num==0)
     {
       int end_val = READ(LASER_END2_PIN);
-      
-        if(end_val ==0)
+      _laser_end_val[1] = end_val;
+        if(end_val ==1)
         {
           step(0L,X_AXIS);
           step(0L,Y_AXIS);
           step(0L,Z_AXIS);
-          delta_tcp_serach_y = 0;
+          delta_tcp_serach_y = 2;
           ring_buf_en = false;
         }
       
@@ -696,13 +708,13 @@ void StepDirDriverPos::home_handler(byte _num)
     if(_num==0)
     {
       int end_val = READ(LASER_END2_PIN);
-      
-        if(end_val ==0)
+      _laser_end_val[1] = end_val;
+        if(end_val ==1)
         {
           step(0L,X_AXIS);
           step(0L,Y_AXIS);
           step(0L,Z_AXIS);
-          delta_tcp_serach_z = 0;
+          delta_tcp_serach_z = 2;
           ring_buf_en = false;
         }
       
@@ -728,6 +740,16 @@ void StepDirDriverPos::home_handler(byte _num)
   }
   
   
+}
+
+void  StepDirDriverPos::tool_recognise()
+{
+  int end_val = READ(LASER_END2_PIN);
+
+for (byte i=0; i<8;i++)
+{ 
+  _tool_recognise_val[i] =  READ(_tool_recognise_pin[i]);
+}
 }
 
 void  StepDirDriverPos::home_handler()
@@ -789,17 +811,19 @@ void  StepDirDriverPos::vel_handler()
 
 void StepDirDriverPos::idle()
 {
-
- if(!ring_buf_en)
- {
-    counter_idle++;
+counter_idle++;
     if(counter_idle>100)
     {
-      vel_handler();
+      if(!ring_buf_en)
+        {
+    
+            vel_handler();
+      
+
+        }
+        tool_recognise();
       counter_idle=0;
     }   
-
- }
  if(ring_buf_counter>=ring_buf_end) ring_buf_en = false;
   home_handler();
 

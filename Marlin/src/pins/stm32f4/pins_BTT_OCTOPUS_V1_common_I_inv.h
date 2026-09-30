@@ -56,6 +56,31 @@
 #define LASER_END2_PIN                       PB7
 #endif
 
+#if NUM_BOARD == 2
+#define TOOL0_RECOGNISE0_PIN                 -1
+#define TOOL0_RECOGNISE1_PIN                 -1
+#define TOOL0_RECOGNISE2_PIN                 -1
+
+#define TOOL1_RECOGNISE0_PIN                 -1
+#define TOOL1_RECOGNISE1_PIN                 -1
+#define TOOL1_RECOGNISE2_PIN                 -1
+
+#define TOOL2_RECOGNISE0_PIN                 -1
+#define TOOL3_RECOGNISE0_PIN                 -1
+#else
+#define TOOL0_RECOGNISE0_PIN                 PE15
+#define TOOL0_RECOGNISE1_PIN                 PE13
+#define TOOL0_RECOGNISE2_PIN                 PE10
+
+#define TOOL1_RECOGNISE0_PIN                 PE14
+#define TOOL1_RECOGNISE1_PIN                 PE12
+#define TOOL1_RECOGNISE2_PIN                 PE9
+
+#define TOOL2_RECOGNISE0_PIN                 PE8
+#define TOOL3_RECOGNISE0_PIN                 PE7
+
+#endif
+
 //#define I2C_SCL_PIN                       PA9
 //#define I2C_SDA_PIN                       PA10
 // Avoid conflict with TIMER_TONE

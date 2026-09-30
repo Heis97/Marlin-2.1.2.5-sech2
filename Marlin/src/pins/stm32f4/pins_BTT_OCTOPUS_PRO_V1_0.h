@@ -63,10 +63,8 @@
 #endif
 
 
-#define RELAY_4_PIN  PE14
-
-
-#define RELAY_5_PIN  PE15
+#define RELAY_4_PIN  -1
+#define RELAY_5_PIN  -1
 
 
 
