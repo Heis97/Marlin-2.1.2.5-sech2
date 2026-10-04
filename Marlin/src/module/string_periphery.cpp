@@ -94,13 +94,6 @@ void StringPeriphery::init()
     WRITE(FAN2_PIN,1);
     WRITE(FAN1_PIN,1);
 
-    /*set_24v_out(0);
-    set_24v_reset(0);
-    set_reley_1(0);
-    set_reley_2(0);
-    set_reley_HV(0);*/
-
-    
 
     max_test1.begin();
     DELAY_US(100000);
@@ -1340,10 +1333,12 @@ String StringPeriphery::state_cur()
         String((int)motors.delta_calibr)+delim+//4     //5
         String(motors.ring_buf_en)+delim+//5           //6
         String(homing_delta_done)+delim+//6            //7
-        String((int)temp_val_ext)+delim+       //7            //8
+        String((int)thermalManager.temp_hotend[0].celsius)+delim+       //7            //8
         String(motors._programm_done)+delim+      //8            //9
         String(motors.delta_tcp_serach_x)+String(motors.delta_tcp_serach_y)+String(motors.delta_tcp_serach_z)+delim+                           //9            //10
-        "0"+delim;                           //10            //11
+
+        String(motors._tool_recognise_val[0])+String(motors._tool_recognise_val[1])+String(motors._tool_recognise_val[2])+String(motors._tool_recognise_val[3])+
+        String(motors._tool_recognise_val[4])+String(motors._tool_recognise_val[5])+String(motors._tool_recognise_val[6])+String(motors._tool_recognise_val[7])+delim;                           //10            //11
     }
     else if(cur_send==1)
     {
@@ -1390,9 +1385,7 @@ String StringPeriphery::state_cur()
         String(motors._steps[4])+delim+//7
         String(motors._steps[5])+delim+//8
         String(motors._steps[6])+delim+//9
-        String(motors._steps[7])+delim;//10
-
-        
+        String(motors._steps[7])+delim;//10        
     }
     else if(cur_send==4)
     {

@@ -37,7 +37,7 @@
 #define PFLED_STRING3 4
 #define PFLED_STRING4 7
 
-#define VIBRO2_PIN  PA3// PA3
+#define VIBRO2_PIN  -1// PA3
 
 
 

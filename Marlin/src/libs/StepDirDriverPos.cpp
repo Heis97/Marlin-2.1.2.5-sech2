@@ -53,14 +53,15 @@ volatile int vibro_counter[AXIS_NUM] {1,  1,  1,  1,  1,  1,  1,  1  };
 volatile int cur_dir[AXIS_NUM] {1,  1,  1,  1,  1,  1,  1,  1  };
 //#endif
 int count_handl = 0;
-#define DIV_VEL_ZERO 100000
+#define DIV_VEL_ZERO 10000
 StepDirDriverPos motors(step_pins, dir_pins, en_pins, stop_pins);
 
 //#define DEBUG_STEP_DIR
 #define DEBUG_STEP_DIR_TARGET 5
 #define COUNT_HAND_END 300
 //---------------------------- конструктор -----------------------------------
-StepDirDriverPos::StepDirDriverPos (int* pinStep, int* pinDir, int* pinEn, int* pinStop) {
+StepDirDriverPos::StepDirDriverPos (int* pinStep, int* pinDir, int* pinEn, int* pinStop) 
+{
  // Serial.println("StepDirDriverPos::StepDirDriverPos");
   for (byte i=0; i<AXIS_NUM;i++)
   {
@@ -106,10 +107,19 @@ StepDirDriverPos::StepDirDriverPos (int* pinStep, int* pinDir, int* pinEn, int* 
   SET_INPUT(LASER_END1_PIN); 
   SET_INPUT(LASER_END2_PIN); 
 
-  for (byte i=0; i<8;i++)
-{ 
-  SET_INPUT(_tool_recognise_pin[i]);
-}
+  
+
+  SET_INPUT_PULLUP(TOOL0_RECOGNISE0_PIN);
+  SET_INPUT_PULLUP(TOOL0_RECOGNISE1_PIN);
+  SET_INPUT_PULLUP(TOOL0_RECOGNISE2_PIN);
+
+  SET_INPUT_PULLUP(TOOL1_RECOGNISE0_PIN);
+  SET_INPUT_PULLUP(TOOL1_RECOGNISE1_PIN);
+  SET_INPUT_PULLUP(TOOL1_RECOGNISE2_PIN);
+
+  SET_INPUT_PULLUP(TOOL2_RECOGNISE0_PIN);
+  SET_INPUT_PULLUP(TOOL3_RECOGNISE0_PIN);
+
 }
 
 long counter_steps = 0;
@@ -150,16 +160,6 @@ void  StepDirDriverPos::control(byte num) {
       _dividerCount_sub[num] = 0;
     }
 
-
-    /*if(_dividerCount_sub[num] > _divider_sub[num])
-    {
-      _dividerCount[num]= 1;
-    };
-    _dividerCount_sub[num]++;
-    if(_dividerCount_sub[num]==100)
-    {
-      _dividerCount_sub[num] = 0;
-    }*/
   };
 
   if ( _steps[num] != 0 ) {
@@ -319,10 +319,6 @@ void  StepDirDriverPos::control() {
   if(!ring_buf_en && buf_work && _steps[0] == 0 && _steps[1] == 0 && _steps[2] == 0 && _steps[7] == 0)
   {
     buf_work = false;
-   /* _steps[0] = 0;
-    _steps[1] = 0;
-    _steps[2] = 0;
-    _steps[7] = 0;*/
     if(ring_buf_counter==ring_buf_end)
     {
       _programm_done = 1;
@@ -495,7 +491,7 @@ void  StepDirDriverPos::setVelIntern(volatile float vel, byte num)
   }
   #endif
   
-  if(div<2) div = 2;
+  if(div<MIN_DIV) div = MIN_DIV;
   _vel[num] = _vel_ch;
   setDiv(div,num);
   //_divider[num]  = (volatile long)div; 
@@ -744,12 +740,19 @@ void StepDirDriverPos::home_handler(byte _num)
 
 void  StepDirDriverPos::tool_recognise()
 {
-  int end_val = READ(LASER_END2_PIN);
 
-for (byte i=0; i<8;i++)
-{ 
-  _tool_recognise_val[i] =  READ(_tool_recognise_pin[i]);
-}
+
+  _tool_recognise_val[0] =  READ(TOOL0_RECOGNISE0_PIN);
+  _tool_recognise_val[1] =  READ(TOOL0_RECOGNISE1_PIN);
+  _tool_recognise_val[2] =  READ(TOOL0_RECOGNISE2_PIN);
+
+  _tool_recognise_val[3] =  READ(TOOL1_RECOGNISE0_PIN);
+  _tool_recognise_val[4] =  READ(TOOL1_RECOGNISE1_PIN);
+  _tool_recognise_val[5] =  READ(TOOL1_RECOGNISE2_PIN);
+  _tool_recognise_val[6] =  READ(TOOL2_RECOGNISE0_PIN);
+  _tool_recognise_val[7] =  READ(TOOL3_RECOGNISE0_PIN);
+
+
 }
 
 void  StepDirDriverPos::home_handler()
@@ -811,7 +814,7 @@ void  StepDirDriverPos::vel_handler()
 
 void StepDirDriverPos::idle()
 {
-counter_idle++;
+    counter_idle++;
     if(counter_idle>100)
     {
       if(!ring_buf_en)
@@ -821,9 +824,10 @@ counter_idle++;
       
 
         }
-        tool_recognise();
+        
       counter_idle=0;
     }   
+
  if(ring_buf_counter>=ring_buf_end) ring_buf_en = false;
   home_handler();
 
@@ -843,5 +847,7 @@ counter_idle++;
     e_en = true;
     counter_rest_e = 0;
   }
+
+  tool_recognise();
   #endif
 }

@@ -3,6 +3,7 @@
 #define AXIS_NUM 8
 #define SERVO_NUM 2
 #define RING_BUF_NUM 400
+#define MIN_DIV  10
 #include <Arduino.h>
 #include "../inc/MarlinConfig.h"
 #include "../module/settings.h"
@@ -68,7 +69,7 @@ class StepDirDriverPos {
 
 //DEFAULT_AXIS_STEPS_PER_UNIT
       int _laser_end_val[2]{ }; 
-      volatile int _tool_recognise_val[8]{ }; 
+      int _tool_recognise_val[8]{}; 
 
       volatile int _vibro[AXIS_NUM]{ }; 
       volatile int vibro_ampl[AXIS_NUM] { };
@@ -143,13 +144,13 @@ class StepDirDriverPos {
     volatile long servo_counter_work[SERVO_NUM]{};
     volatile long servo_counter_20ms_max[SERVO_NUM]{};
     volatile long servo_counter_work_max[SERVO_NUM]{};
-
+int _tool_recognise_pin[8] {};
 
   private:
     int _pinStep[AXIS_NUM]{};
     int  _pinDir[AXIS_NUM]{};
     int  _pinEn [AXIS_NUM]{};
-    int _tool_recognise_pin[8] {};
+    
 
       
       //long int koord[AXIS_NUM]{};     
