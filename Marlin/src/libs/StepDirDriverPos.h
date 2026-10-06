@@ -66,7 +66,7 @@ class StepDirDriverPos {
 
       void  tool_recognise();
 
-
+      long cur_prog_num = 0;
 //DEFAULT_AXIS_STEPS_PER_UNIT
       int _laser_end_val[2]{ }; 
       int _tool_recognise_val[8]{}; 
@@ -76,7 +76,8 @@ class StepDirDriverPos {
       volatile int vibro_counter[AXIS_NUM] {};
       volatile int cur_dir[AXIS_NUM] {};
       
-   
+    volatile long ring_buf_line_num[RING_BUF_NUM]{ }; 
+    volatile long ring_buf_prog_num[RING_BUF_NUM]{ }; 
     volatile long ring_buf_x[RING_BUF_NUM]{ }; 
     volatile long ring_buf_y[RING_BUF_NUM]{ }; 
     volatile long ring_buf_z[RING_BUF_NUM]{ }; 
@@ -103,7 +104,7 @@ class StepDirDriverPos {
     volatile unsigned long ring_buf_all_counter = 0;
     volatile unsigned long ring_buf_all_counter_write = 0;
     volatile unsigned long ring_buf_all_counter_write_max = 0;
-
+    int ring_buf_cur = 0;
     volatile bool ring_buf_en = false;
 
 

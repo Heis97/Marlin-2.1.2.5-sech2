@@ -5,51 +5,19 @@
 
 
 void GcodeSuite::M581() {
-  if (parser.seen('X')) 
+
+
+ if (parser.seen('A') && parser.seen('I')) 
   {
-       // string_manager.k_m_x = parser.intval('X');
-  } 
 
-   if (parser.seen('D')) 
-  {
-        string_manager.dist_m = parser.floatval('D');
-  } 
-
-   if (parser.seen('L')) 
-  {
-        string_manager.buff_m = parser.intval('L');
-  } 
-
-
-
- if (parser.seen('A')) 
-  {
-        string_manager.vibro_main = parser.intval('A');
-        if(string_manager.vibro_main!=1)
-        {
-            hal.set_pwm_duty(pin_t(VIBRO1_PIN), 0);
-             hal.set_pwm_duty(pin_t(VIBRO2_PIN), 0);
-        }
-  } 
-
-   if (parser.seen('B')) 
-  {
-        string_manager.vibro_loop_high = parser.intval('B');
-  } 
-
-     
-   if (parser.seen('C')) 
-  {
-        string_manager.vibro_loop_ampl = parser.intval('C');
-  } 
-
-
-  if (parser.seen('D')) 
-  {
-       string_manager.vibro_loop_ampl2 = parser.intval('D');
-        //string_manager.power_m_vibro = parser.floatval('D');
+        
+    if(parser.intval('I')==0)  hal.set_pwm_duty(pin_t(FAN0_PIN), parser.intval('A'));
+    if(parser.intval('I')==1)  hal.set_pwm_duty(pin_t(FAN1_PIN), parser.intval('A'));
+    if(parser.intval('I')==2)  hal.set_pwm_duty(pin_t(FAN2_PIN), parser.intval('A'));
+    if(parser.intval('I')==3)  hal.set_pwm_duty(pin_t(FAN3_PIN), parser.intval('A'));
+    if(parser.intval('I')==4)  hal.set_pwm_duty(pin_t(FAN4_PIN), parser.intval('A'));
+    if(parser.intval('I')==6)  hal.set_pwm_duty(pin_t(FAN5_PIN), parser.intval('A'));
 
   } 
-
 
 }

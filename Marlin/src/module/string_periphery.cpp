@@ -91,9 +91,10 @@ void StringPeriphery::init()
     WRITE(RELAY_2_PIN,0);
     WRITE(RELAY_3_PIN,0);
 
+    #if NUM_BOARD == 1
     WRITE(FAN2_PIN,1);
     WRITE(FAN1_PIN,1);
-
+    #endif
 
     max_test1.begin();
     DELAY_US(100000);
@@ -1321,7 +1322,7 @@ String StringPeriphery::state_cur()
     int homing_delta_done =(int)(motors._homing_need[0]||motors._homing_need[1]||motors._homing_need[2]);
     state = "st"+String(NUM_BOARD)+" "+
     String(cur_line_num)+delim+            //0          //1
-    String(motors.ring_buf_counter)+delim+//1           //2
+    String(motors.ring_buf_all_counter_write_max)+delim+//1           //2    //ring_buf_control_counter   //motors.ring_buf_all_counter_write
     String(cur_send)+delim;               //2           //3  cur_send
 
     if(cur_send==0)
@@ -1355,14 +1356,23 @@ String StringPeriphery::state_cur()
     else if(cur_send==2)
     {
         state += 
-        String(motors._endstop_val[0])+delim+//3
-        String(motors._endstop_val[1])+delim+//4
+        /*String(motors.ring_buf_all_counter_write_max)+delim+//3
+        String(motors.ring_buf_cur_count)+delim+//4
         String(motors._endstop_val[2])+delim+//5
         String(motors._endstop_val[3])+delim+//6
         String(motors._endstop_val[4])+delim+//7
         String(motors._endstop_val[5])+delim+//8
         String(motors._endstop_val[6])+delim+//9
-        String(motors._endstop_val[7])+delim;//10
+        String(motors._endstop_val[7])+delim;//10*/
+
+        String(motors.ring_buf_all_counter_write)+delim+//3
+        String(motors.ring_buf_counter)+delim+//4
+        String(motors.ring_buf_end)+delim+//4
+        String(motors.ring_buf_cur_line)+delim+//5
+        String(motors.ring_buf_time[motors.ring_buf_cur])+delim+//6
+        String(motors.ring_buf_prog_num[motors.ring_buf_cur])+delim+//6
+        String(motors.cur_prog_num)+delim+//7
+        String(motors.ring_buf_x[motors.ring_buf_cur])+delim;//8
 
        /*String(motors.servo_counter_20ms[0])+delim+//3
         String(motors.servo_counter_20ms[1])+delim+//4
@@ -1380,12 +1390,13 @@ String StringPeriphery::state_cur()
         state += 
         String(motors._steps[0])+delim+//3
         String(motors._steps[1])+delim+//4
-        String(motors._steps[2])+delim+//5
-        String(motors._steps[3])+delim+//6
-        String(motors._steps[4])+delim+//7
-        String(motors._steps[5])+delim+//8
-        String(motors._steps[6])+delim+//9
-        String(motors._steps[7])+delim;//10        
+        String(motors._steps[2])+delim+//4
+        String(motors._steps[3])+delim+//5
+        String(motors._steps[4])+delim+//6
+        String(motors._steps[5])+delim+//6
+        String(motors._steps[6])+delim+//7
+        String(motors._steps[7])+delim;//8
+     
     }
     else if(cur_send==4)
     {

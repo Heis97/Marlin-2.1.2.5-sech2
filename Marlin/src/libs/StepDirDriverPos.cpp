@@ -199,9 +199,9 @@ void  StepDirDriverPos::ring_buf_control()
 {
   counter_rest_e=0;
   buf_work = true;
-  int ring_buf_cur = ring_buf_counter%RING_BUF_NUM;//current command all and in ring
+  ring_buf_cur = ring_buf_counter%RING_BUF_NUM;//current command all and in ring
   ring_buf_cur_line = ring_buf_time[ring_buf_cur];
-  if(ring_buf_cur_count>=ring_buf_time[ring_buf_cur] )
+  if(ring_buf_cur_count>=ring_buf_time[ring_buf_cur] && cur_prog_num == ring_buf_prog_num[ring_buf_cur] && ring_buf_counter == ring_buf_line_num[ring_buf_cur])
   {
 
     ring_buf_cur_count = 0;
@@ -262,7 +262,7 @@ void  StepDirDriverPos::ring_buf_control()
     
     //-------------------
     ring_buf_counter++;
-
+    motors.ring_buf_all_counter_write_max = motors.ring_buf_lookup + motors.ring_buf_counter;
   }
   ring_buf_cur_count++;
   
@@ -312,6 +312,10 @@ void  StepDirDriverPos::control() {
       
     }
   }
+  else{
+    //ring_buf_counter = 0;
+    //ring_buf_all_counter_write_max = motors.ring_buf_lookup;
+  }
   
   
   
@@ -324,7 +328,8 @@ void  StepDirDriverPos::control() {
       _programm_done = 1;
       
     }
-    
+    ring_buf_counter = 0;
+    ring_buf_all_counter_write_max = motors.ring_buf_lookup;
   }
   #endif
   control_counter++;
