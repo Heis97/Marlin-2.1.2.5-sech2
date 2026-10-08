@@ -302,24 +302,27 @@ void  StepDirDriverPos::control() {
 #ifdef KINEMATIK
   if(ring_buf_en)
   {
-  if(ring_buf_counter<ring_buf_end && ring_buf_counter<ring_buf_all_counter_write)
+    if(ring_buf_counter<ring_buf_end && ring_buf_counter<ring_buf_all_counter_write)
     {
       ring_buf_control();
       _programm_done = 0;
     }
-    else
+
+
+    if(ring_buf_counter==ring_buf_end && _steps[0] == 0 && _steps[1] == 0 && _steps[2] == 0 && _steps[7] == 0)
     {
+
+      _programm_done = 1;
+      ring_buf_en = false;
       
+      ring_buf_counter = 0;
+      ring_buf_all_counter_write_max = motors.ring_buf_lookup;
     }
   }
-  else{
-    //ring_buf_counter = 0;
-    //ring_buf_all_counter_write_max = motors.ring_buf_lookup;
-  }
-  
-  
-  
 
+
+ 
+/*
   if(!ring_buf_en && buf_work && _steps[0] == 0 && _steps[1] == 0 && _steps[2] == 0 && _steps[7] == 0)
   {
     buf_work = false;
@@ -331,6 +334,7 @@ void  StepDirDriverPos::control() {
     ring_buf_counter = 0;
     ring_buf_all_counter_write_max = motors.ring_buf_lookup;
   }
+  */
   #endif
   control_counter++;
 
@@ -347,13 +351,14 @@ void  StepDirDriverPos::control() {
   control_servo(1);
   
 
-  if( control_counter%10000 ==0)
+  /*if( control_counter%10000 ==0)
   {
     debug_count =(long)( 1000000.0f/(float)(_pos[0]-debug_prev_pos));
 
       debug_prev_pos = _pos[0];
       debug_prev_count = control_counter;
-  }
+  }*/
+ wait_idle();
 }
 //------------------------------- запуск вращения
 // инициирует поворот двигателя на заданное число шагов
@@ -816,7 +821,18 @@ void  StepDirDriverPos::vel_handler()
       vel_handler(7);
   }
 }
-
+void StepDirDriverPos::wait_idle()
+{
+  if(wait_time_counter_en==1 )
+  {
+    wait_time_counter++;
+    if(wait_time_counter>=wait_time_counter_max)
+    {
+      wait_time_counter_done = 1;
+      wait_time_counter_en = 0;
+    }
+  }
+}
 void StepDirDriverPos::idle()
 {
     counter_idle++;
@@ -833,7 +849,7 @@ void StepDirDriverPos::idle()
       counter_idle=0;
     }   
 
- if(ring_buf_counter>=ring_buf_end) ring_buf_en = false;
+ //if(ring_buf_counter>=ring_buf_end) ring_buf_en = false;
   home_handler();
 
   #ifdef KINEMATIK
@@ -852,7 +868,10 @@ void StepDirDriverPos::idle()
     e_en = true;
     counter_rest_e = 0;
   }
+ 
+  #endif
 
+   #if NUM_BOARD == 1
   tool_recognise();
   #endif
 }

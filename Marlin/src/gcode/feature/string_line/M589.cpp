@@ -46,4 +46,20 @@ void GcodeSuite::M589() {
         motors.delta_tcp_serach_z = parser.intval('C');
 
     }
+
+    if (parser.seen('P')) 
+    {
+        motors.wait_time_counter_max = parser.longval('P');
+        if(motors.wait_time_counter_max >0)
+        {
+            motors.wait_time_counter = 0;
+            motors.wait_time_counter_en = 1;
+            motors.wait_time_counter_done = 0;
+        }
+        else
+        {
+            motors.wait_time_counter_en = 0;
+        }
+
+    }
 }
