@@ -36,8 +36,8 @@
   #define I2C_SDA_PIN                       PB9
 #endif
 
-#define I2C_SCL_PIN                       PB8
-#define I2C_SDA_PIN                       PB9
+#define I2C_SCL_PIN                       -1
+#define I2C_SDA_PIN                       -1
 
 #if NUM_BOARD == 2
 #define SERVO_C1_PIN                       PB6
@@ -52,8 +52,9 @@
 #define LASER_END1_PIN                       -1
 #define LASER_END2_PIN                       -1
 #else
-#define LASER_END1_PIN                       PB6
-#define LASER_END2_PIN                       PB7
+#define LASER_END1_PIN                       PF3
+#define LASER_END2_PIN                       PF4
+#define LASER_POWER_PIN                       PB8
 #endif
 
 #if NUM_BOARD == 2
@@ -227,7 +228,7 @@
 // Power Loss Detection
 //
 #ifndef POWER_LOSS_PIN
-  #define POWER_LOSS_PIN                    PC0   // PWRDET
+  #define POWER_LOSS_PIN                    -1   // PWRDET
 #endif
 
 //
@@ -307,10 +308,10 @@
 //
 // Temperature Sensors
 //
-#define TEMP_BED_PIN                        PF3   // TB
-#define TEMP_1_PIN                          PF5   // TH1
-#define TEMP_2_PIN                          PF6   // TH2
-#define TEMP_3_PIN                          PF7   // TH3
+#define TEMP_BED_PIN                        -1   // TB
+#define TEMP_1_PIN                          -1   // TH1
+#define TEMP_2_PIN                          -1   // TH2
+#define TEMP_3_PIN                          -1   // TH3
 
 //
 // Heaters / Fans

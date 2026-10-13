@@ -92,8 +92,8 @@ void StringPeriphery::init()
     WRITE(RELAY_3_PIN,0);
 
     #if NUM_BOARD == 1
-    WRITE(FAN2_PIN,1);
     WRITE(FAN1_PIN,1);
+    //WRITE(FAN2_PIN,1);
     #endif
 
     max_test1.begin();
@@ -867,6 +867,18 @@ void StringPeriphery::idle()
         temp_val_ext = temp_val_ext - 0.013*(temp_val_ext-chamber_temp_cur);   
         thermalManager.temp_hotend[0].celsius = temp_val_ext;
         time_measure_temp = cur_time_mc;
+
+        if (heater_en)
+        {
+            if(abs(thermalManager.temp_hotend[0].celsius-thermalManager.temp_hotend[0].target)>1.0f)
+            {
+                wait_temp_en = 1;
+            }
+        }
+        else
+        {
+            wait_temp_en = 0;
+        }
     }
     #endif
 
@@ -1324,30 +1336,31 @@ String StringPeriphery::state_cur()
 
     String state = "";
     if (cur_send>=3){cur_send = 0;};
-    
+    //cur_send = 0;
     motors.debug_val  = READ(motors._pinStop[3]);
     int homing_delta_done =(int)(motors._homing_need[0]||motors._homing_need[1]||motors._homing_need[2]);
+    int move_steppers = 0;
+    int move_kinem = 0;
+    if(motors._steps[0]!=0 ||motors._steps[1]!=0 ||motors._steps[2]!=0 || motors._steps[3]!=0 ||motors._steps[4]!=0 ||motors._steps[5]!=0 ||motors._steps[6]!=0 ||motors._steps[7]!=0) move_steppers = 1;
+    if(motors._steps[0]!=0 ||motors._steps[1]!=0 ||motors._steps[2]!=0 || motors._steps[7]!=0) move_kinem = 1;
+
+
     state = "st"+String(NUM_BOARD)+" "+
     String(cur_line_num)+delim+            //0          //1
     String(motors.ring_buf_all_counter_write_max)+delim+//1           //2    //ring_buf_control_counter   //motors.ring_buf_all_counter_write
-    String(cur_send)+delim;               //2           //3  cur_send
-    int move_steppers = 0;
-    int move_kinem = 0;
+    String(cur_send)+delim+               //2           //3  cur_send   
+    String(move_steppers)+String(move_kinem)+String(motors.ring_buf_en)+String(motors.wait_time_counter_en)+String(wait_temp_en)+delim;//3 
     if(cur_send==0)
     {
-        if(motors._steps[0]!=0 ||motors._steps[1]!=0 ||motors._steps[2]!=0 || motors._steps[3]!=0 ||motors._steps[4]!=0 ||motors._steps[5]!=0 ||motors._steps[6]!=0 ||motors._steps[7]!=0) move_steppers = 1;
-        if(motors._steps[0]!=0 ||motors._steps[1]!=0 ||motors._steps[2]!=0 || motors._steps[7]!=0) move_kinem = 1;
-
-        state += 
-        String(move_steppers)+String(move_kinem)+String(motors._programm_done)+String(motors.wait_time_counter_en)+String(wait_temp_en)+delim+//3       //4motors.control_counter
+        state +=         
         String((int)motors.delta_calibr)+delim+//4     //5
-        String(motors.ring_buf_en)+delim+//5           //6
-        String(homing_delta_done)+delim+//6            //7
-        String((int)thermalManager.temp_hotend[0].celsius)+delim+       //7            //8
-        "0"+delim+      //8            //9
+        String(analogRead(LASER_END1_PIN))+"00"+String(analogRead(LASER_END2_PIN))+delim+//5           //6           String(motors.ring_buf_en)+delim+//5           //6
+        String(motors._endstop_val[0])+String(motors._endstop_val[1])+String(motors._endstop_val[2])+String(motors._endstop_val[3])+String(motors._endstop_val[4])+String(motors._endstop_val[5])+String(motors._endstop_val[6])+String(motors._endstop_val[7])+delim+//6            //7
+        String((int)(thermalManager.temp_hotend[0].celsius*100))+delim+       //7            //8
+        String(motors.control_counter)+delim+      //8            //9
         String(motors.delta_tcp_serach_x)+String(motors.delta_tcp_serach_y)+String(motors.delta_tcp_serach_z)+delim+                           //9            //10
-        String(motors._tool_recognise_val[0])+String(motors._tool_recognise_val[1])+String(motors._tool_recognise_val[2])+String(motors._tool_recognise_val[3])+
-        String(motors._tool_recognise_val[4])+String(motors._tool_recognise_val[5])+String(motors._tool_recognise_val[6])+String(motors._tool_recognise_val[7])+delim;                           //10            //11
+        String(motors._tool_recognise_val[0])+String(motors._tool_recognise_val[1])+String(motors._tool_recognise_val[2])+String(motors._tool_recognise_val[3])+ String(motors._tool_recognise_val[4])+String(motors._tool_recognise_val[5])+String(motors._tool_recognise_val[6])+String(motors._tool_recognise_val[7])+delim+                           //10  
+        "0"+delim;//10       //11
     }
     else if(cur_send==1)
     {

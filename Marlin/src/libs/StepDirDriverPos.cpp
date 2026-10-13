@@ -104,10 +104,11 @@ StepDirDriverPos::StepDirDriverPos (int* pinStep, int* pinDir, int* pinEn, int* 
     servo_counter_work_max[i] = 120;
   }
 
-  SET_INPUT(LASER_END1_PIN); 
-  SET_INPUT(LASER_END2_PIN); 
+  SET_INPUT_PULLUP(LASER_END1_PIN); 
+  SET_INPUT_PULLUP(LASER_END2_PIN); 
 
-  
+  SET_OUTPUT(LASER_POWER_PIN); 
+  WRITE(LASER_POWER_PIN,1);
 
   SET_INPUT_PULLUP(TOOL0_RECOGNISE0_PIN);
   SET_INPUT_PULLUP(TOOL0_RECOGNISE1_PIN);
