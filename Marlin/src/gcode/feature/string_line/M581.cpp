@@ -21,4 +21,6 @@ void GcodeSuite::M581() {
     if(parser.intval('I')==7)  hal.set_pwm_duty(pin_t(LASER_POWER_PIN), parser.intval('A'));
   } 
 
+  
+
 }

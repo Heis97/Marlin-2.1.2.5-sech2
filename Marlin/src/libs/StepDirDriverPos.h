@@ -69,7 +69,10 @@ class StepDirDriverPos {
 
     long cur_prog_num = 0;
 
+
+ 
     int _laser_end_val[2]{ }; 
+
     int _tool_recognise_val[8]{}; 
 
     volatile int _vibro[AXIS_NUM]{ }; 

@@ -1352,9 +1352,9 @@ String StringPeriphery::state_cur()
     String(move_steppers)+String(move_kinem)+String(motors.ring_buf_en)+String(motors.wait_time_counter_en)+String(wait_temp_en)+delim;//3 
     if(cur_send==0)
     {
-        state +=         
+        state +=          
         String((int)motors.delta_calibr)+delim+//4     //5
-        String(analogRead(LASER_END1_PIN))+"00"+String(analogRead(LASER_END2_PIN))+delim+//5           //6           String(motors.ring_buf_en)+delim+//5           //6
+        String(motors._laser_end_val[0])+String(motors._laser_end_val[1])+delim+//5           //6           String(motors.ring_buf_en)+delim+//5           //6
         String(motors._endstop_val[0])+String(motors._endstop_val[1])+String(motors._endstop_val[2])+String(motors._endstop_val[3])+String(motors._endstop_val[4])+String(motors._endstop_val[5])+String(motors._endstop_val[6])+String(motors._endstop_val[7])+delim+//6            //7
         String((int)(thermalManager.temp_hotend[0].celsius*100))+delim+       //7            //8
         String(motors.control_counter)+delim+      //8            //9

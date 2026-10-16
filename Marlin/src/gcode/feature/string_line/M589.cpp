@@ -39,13 +39,13 @@ void GcodeSuite::M589() {
     if (parser.seen('B')) 
     {
         motors.delta_tcp_serach_y = parser.intval('B');
-
     }
     if (parser.seen('C')) 
     {
         motors.delta_tcp_serach_z = parser.intval('C');
-
     }
+
+  
 
     if (parser.seen('P')) 
     {

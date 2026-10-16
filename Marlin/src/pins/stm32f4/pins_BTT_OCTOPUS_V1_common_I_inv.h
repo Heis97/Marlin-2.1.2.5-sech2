@@ -51,10 +51,11 @@
 #if NUM_BOARD == 2
 #define LASER_END1_PIN                       -1
 #define LASER_END2_PIN                       -1
+#define LASER_POWER_PIN                       -1
 #else
-#define LASER_END1_PIN                       PF3
-#define LASER_END2_PIN                       PF4
-#define LASER_POWER_PIN                       PB8
+#define LASER_END1_PIN                       PB6
+#define LASER_END2_PIN                       PB7
+#define LASER_POWER_PIN                       -1
 #endif
 
 #if NUM_BOARD == 2

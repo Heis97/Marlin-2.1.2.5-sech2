@@ -24,7 +24,6 @@ volatile long servo_counter_20ms_max[SERVO_NUM]{2000,2000}; //20ms
     
 
 
-
 int _endstop_val[AXIS_NUM]{0,0,0,0,0,0,0,0 }; 
 int end_inv[AXIS_NUM]{0, 0, 0, 1, 1, 1, 1, 0 }; 
 long home_pos[AXIS_NUM]{32000,  32000,  32000,  0,  0,  0,  0,  0 }; 
@@ -678,9 +677,9 @@ void StepDirDriverPos::home_handler(byte _num)
   {
     if(_num==0)
     {
-      int end_val = READ(LASER_END1_PIN);
-      _laser_end_val[0] = end_val;
-        if(end_val ==1)
+      //int end_val = READ(LASER_END1_PIN);
+      //_laser_end_val[0] = end_val;
+        if(_laser_end_val[0]==1)
         {
           step(0L,X_AXIS);
           step(0L,Y_AXIS);
@@ -696,9 +695,9 @@ void StepDirDriverPos::home_handler(byte _num)
   {
     if(_num==0)
     {
-      int end_val = READ(LASER_END2_PIN);
-      _laser_end_val[1] = end_val;
-        if(end_val ==1)
+      //int end_val = READ(LASER_END2_PIN);
+      //_laser_end_val[1] = end_val;
+        if(_laser_end_val[1]==1)
         {
           step(0L,X_AXIS);
           step(0L,Y_AXIS);
@@ -714,9 +713,9 @@ void StepDirDriverPos::home_handler(byte _num)
   {
     if(_num==0)
     {
-      int end_val = READ(LASER_END2_PIN);
-      _laser_end_val[1] = end_val;
-        if(end_val ==1)
+      //int end_val = READ(LASER_END2_PIN);
+      //_laser_end_val[1] = end_val;
+        if(_laser_end_val[1]==1)
         {
           step(0L,X_AXIS);
           step(0L,Y_AXIS);
@@ -834,6 +833,9 @@ void StepDirDriverPos::wait_idle()
     }
   }
 }
+
+int laser_val_counter1 = 0;
+int laser_val_counter2 = 0;
 void StepDirDriverPos::idle()
 {
     counter_idle++;
@@ -874,5 +876,58 @@ void StepDirDriverPos::idle()
 
    #if NUM_BOARD == 1
   tool_recognise();
+_laser_end_val[0] = READ(LASER_END1_PIN);
+_laser_end_val[1] = READ(LASER_END2_PIN);
+  /*float end_val1 = (float)analogRead(LASER_END1_PIN);
+  if(abs(end_val1 - _laser_end_val_prev[0])<20  || laser_val_counter1>20)
+  {
+    _laser_end_val_prev[0] = end_val1;
+    laser_val_counter1 = 0;
+    
+  }
+  else
+  {
+    laser_val_counter1++;
+    
+  }
+  
+  
+  _laser_cur_end_val[0] = _laser_cur_end_val[0]+0.001*(end_val1 - _laser_cur_end_val[0]);
+  _laser_end_val[0] = _laser_end_val_open_val[0] - _laser_cur_end_val[0];
+
+  if(_laser_end_val[0]>6)
+    {
+      _laser_end_val_int[0] = 1;
+    }
+    else
+    {
+       _laser_end_val_int[0] = 0;
+    }
+
+//-----------------------------------------------------------------------------
+float end_val2 = (float)analogRead(LASER_END2_PIN);
+  if(abs(end_val2 - _laser_end_val_prev[1])<20  || laser_val_counter2>20)
+  {
+    _laser_end_val_prev[1] = end_val2;
+    laser_val_counter2 = 0;
+
+    
+  }
+  else
+  {
+    laser_val_counter2++;
+    
+  }
+
+  _laser_cur_end_val[1] = _laser_cur_end_val[1]+0.001*( end_val2 - _laser_cur_end_val[1]);
+  _laser_end_val[1] = _laser_end_val_open_val[1] - _laser_cur_end_val[1];
+if(_laser_end_val[1]>2)
+    {
+      _laser_end_val_int[1] = 1;
+    }
+    else
+    {
+       _laser_end_val_int[1] = 0;
+    }*/
   #endif
 }
